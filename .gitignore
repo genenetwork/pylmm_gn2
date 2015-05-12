@@ -1,0 +1,8 @@
+*.pyc
+data/*
+*.foo
+*.kin
+build
+*.txt
+*.gnumeric
+*.tgz
