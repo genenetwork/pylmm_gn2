@@ -5,6 +5,7 @@ from numpy.distutils.system_info import get_info;
 from scipy import linalg
 from scipy import optimize
 from scipy import stats
+import pylmmcuda
 
 useNumpy = None
 hasBLAS = None
@@ -26,8 +27,14 @@ def matrix_initialize(useBLAS=True):
         useNumpy=True
         
 def matrixMult(A,B):
-   global useNumpy  # module based variable
+   global useNumpy  # module based variables
+   global useCUDA
 
+   if pylmmcuda.useCUDA:
+       print "TRYING TO USE CUDA"
+       sys.exit(1)
+       return pylmmcuda.dot(A,B)
+   
    if useNumpy:
        return np.dot(A,B)
 
