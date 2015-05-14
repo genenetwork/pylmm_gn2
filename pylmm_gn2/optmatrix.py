@@ -1,17 +1,19 @@
 import sys
 import time
 import numpy as np
-from numpy.distutils.system_info import get_info;
+from numpy.distutils.system_info import get_info
 from scipy import linalg
 from scipy import optimize
 from scipy import stats
-import pylmmcuda
+import cuda
 
 useNumpy = None
 hasBLAS = None
 
-def matrix_initialize(useBLAS=True): 
+def matrix_initialize(useBLAS=True):
     global useNumpy  # module based variable
+
+
     if useBLAS and useNumpy == None:
         print get_info('blas_opt')
         try:
@@ -25,16 +27,16 @@ def matrix_initialize(useBLAS=True):
     else:
         sys.stderr.write("INFO: using numpy.dot\n")
         useNumpy=True
-        
+    if cuda.useCUDA:
+        sys.stderr.write("INFO: with CUDA support\n")
+
+
 def matrixMult(A,B):
    global useNumpy  # module based variables
-   global useCUDA
 
-   if pylmmcuda.useCUDA:
-       print "TRYING TO USE CUDA"
-       sys.exit(1)
-       return pylmmcuda.dot(A,B)
-   
+   if cuda.useCUDA:
+       return cuda.dot(A,B)
+
    if useNumpy:
        return np.dot(A,B)
 
