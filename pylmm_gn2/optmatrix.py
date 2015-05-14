@@ -7,6 +7,9 @@ from scipy import optimize
 from scipy import stats
 import cuda
 
+from standalone import uses
+debug,info,mprint = uses('debug','info','mprint')
+
 initializedMatrix = None
 useNumpy = None
 useBLAS = False
@@ -44,6 +47,8 @@ def matrixMult(A,B):
    global initializedMartix
    global useNumpy  # module based variables
 
+   mprint("A",A)
+   mprint("B",B)
    if not initializedMatrix:
        matrix_initialize()
 
