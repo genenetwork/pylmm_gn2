@@ -20,23 +20,16 @@ except:
   useCUDA=False
   sys.stderr.write("INFO: CUDA not supported\n")
 
+from standalone import uses
+debug,info,mprint = uses('debug','info','mprint')
+
 import timeit
 
 def dot(a,b):
-    # print("Pump to GPU\n")
-    # start_time1 = timeit.default_timer()
-    # print(a.shape)
-    # print(b.shape)
+    debug("CUDA dot product")
     a_gpu = gpuarray.to_gpu(np.copy(a))
     b_gpu = gpuarray.to_gpu(np.copy(b))
-    # print("Time elapsed ",timeit.default_timer() - start_time1)
-
-    # print("Calculate\n")
-    # start_time2 = timeit.default_timer()
     d_gpu = linalg.dot(a_gpu, b_gpu)
-    # print(d_gpu)
-    # print(d_gpu.shape)
-    # print("Time elapsed ",timeit.default_timer() - start_time1)
 
     res = np.asarray(d_gpu.get())
     # print(res.shape)

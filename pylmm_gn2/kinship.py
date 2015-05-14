@@ -44,6 +44,7 @@ def kinship_full(G):
    """
    Calculate the Kinship matrix using a full dot multiplication
    """
+   debug("Full kinship matrix used")
    # mprint("kinship_full G",G)
    m = G.shape[0] # snps
    n = G.shape[1] # inds
@@ -52,7 +53,7 @@ def kinship_full(G):
    # m = np.dot(G.T,G)
    m = matrixMultT(G.T)
    m = m/G.shape[0]
-   # mprint("kinship_full K",m)
+   mprint("kinship_full K",m)
    return m
 
 def compute_W(job,G,n,snps,compute_size):
