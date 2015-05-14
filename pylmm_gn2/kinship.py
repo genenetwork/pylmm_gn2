@@ -25,6 +25,7 @@ from scipy import linalg
 import multiprocessing as mp # Multiprocessing is part of the Python stdlib
 import Queue
 import time
+import threads
 
 from optmatrix import matrixMultT
 
@@ -87,7 +88,7 @@ def f_init(q):
 
 # Calculate the kinship matrix from G (SNPs as rows!), returns K
 #
-def kinship(G,computeSize=1000,numThreads=1,useBLAS=False):
+def kinship(G,computeSize=1000):
 
    # matrix_initialize(useBLAS)
 
@@ -100,8 +101,8 @@ def kinship(G,computeSize=1000,numThreads=1,useBLAS=False):
    assert snps>=inds, "snps should be larger than inds (%i snps, %i inds)" % (snps,inds)
 
    q = mp.Queue()
-   if numThreads is not None and numThreads != 1:
-       p = mp.Pool(numThreads, f_init, [q])
+   if threads.multi():
+       p = mp.Pool(threads.numThreads, f_init, [q])
        cpu_num = mp.cpu_count()
        info("CPU cores: %i" % cpu_num)
    iterations = snps/computeSize+1
@@ -116,7 +117,7 @@ def kinship(G,computeSize=1000,numThreads=1,useBLAS=False):
       if W.shape[1] == 0:
         continue
 
-      if numThreads == 1:
+      if threads.numThreads == 1:
          # Single-core
          print(q)
          compute_matrixMult(job,W,q)
@@ -141,7 +142,7 @@ def kinship(G,computeSize=1000,numThreads=1,useBLAS=False):
             except Queue.Empty:
                pass
          
-   if numThreads == None or numThreads > 1:
+   if threads.multi():
       for job in range(len(results)-completed):
          j,x = q.get(True,15)
          debug("Job "+str(j)+" finished")

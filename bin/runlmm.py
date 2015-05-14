@@ -37,6 +37,7 @@ import genotype
 import phenotype
 from standalone import uses
 import cuda
+import threads
 
 progress,mprint,debug,info,fatal = uses('progress','mprint','debug','info','fatal')
 
@@ -85,9 +86,10 @@ parser.add_option("-q", "--quiet",
                   action="store_false", dest="verbose", default=True,
                   help="don't print status messages to stdout")
 parser.add_option("--blas", action="store_true", default=False, dest="useBLAS", help="Use BLAS instead of numpy matrix multiplication")
+parser.add_option("--no-blas", action="store_true", default=False, dest="noBLAS", help="Disable BLAS support")
 parser.add_option("--no-cuda", action="store_true", default=False, dest="noCUDA", help="Disable CUDA support")
-parser.add_option("-t", "--threads",
-                  type="int", dest="numThreads", 
+parser.add_option("-t", "--threads", default=None,
+                  type="int", dest="numThreads",
                   help="Threads to use")
 parser.add_option("--saveKvaKve",
                   action="store_true", dest="saveKvaKve", default=False,
@@ -124,9 +126,22 @@ if options.geno and cmd != 'iterator':
     g = tsvreader.geno(options.geno)
     print g.shape
 
+if options.useBLAS:
+    import optmatrix
+    optmatrix.useBLAS = True
+    print "Forcing BLAS support"
+
+if options.noBLAS:
+    import optmatrix
+    optmatrix.useBLAS = False
+    print "Disabling BLAS support"
+
 if options.noCUDA:
     cuda.useCUDA = False
     print "Disabling CUDA support"
+
+if options.numThreads is not None:
+    threads.numThreads = options.numThreads
 
 def check_results(ps,ts):
     print np.array(ps)

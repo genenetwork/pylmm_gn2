@@ -9,10 +9,12 @@ import cuda
 
 initializedMatrix = None
 useNumpy = None
+useBLAS = False
 hasBLAS = None
 
-def matrix_initialize(useBLAS=True):
+def matrix_initialize():
     global initializedMatrix
+    global useBLAS
     global useNumpy  # module based variable
     global dgemm
 

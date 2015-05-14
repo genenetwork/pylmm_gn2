@@ -26,6 +26,7 @@ import os
 import numpy as np
 import input
 from lmm2 import LMM2
+import threads
 
 import multiprocessing as mp # Multiprocessing is part of the Python stdlib
 import Queue
@@ -69,7 +70,6 @@ def gwas(Y,G,K,restricted_max_likelihood=True,refit=False,verbose=True):
    info("In gwas.gwas")
    # matrix_initialize()
    cpu_num = mp.cpu_count()
-   numThreads = 1 # for now use all available threads
    kfile2 = False
    reml = restricted_max_likelihood
 
@@ -96,8 +96,8 @@ def gwas(Y,G,K,restricted_max_likelihood=True,refit=False,verbose=True):
    # Set up the pool
    # mp.set_start_method('spawn')
    q = mp.Queue()
-   if numThreads is not None and numThreads != 1:
-       p = mp.Pool(numThreads, f_init, [q])
+   if threads.multi():
+       p = mp.Pool(threads.numThreads, f_init, [q])
    collect = []
 
    count = 0
@@ -110,7 +110,7 @@ def gwas(Y,G,K,restricted_max_likelihood=True,refit=False,verbose=True):
       if count % 1000 == 0:
          job += 1
          debug("Job %d At SNP %d" % (job,count))
-         if numThreads == 1:
+         if threads.single():
             debug("Running on 1 THREAD")
             compute_snp(job,n,collect,lmm2,reml,q)
             collect = []
@@ -141,7 +141,7 @@ def gwas(Y,G,K,restricted_max_likelihood=True,refit=False,verbose=True):
 
       collect.append(snp_id)
 
-   if numThreads==1 or count<1000 or len(collect)>0:
+   if threads.single() or count<1000 or len(collect)>0:
       job += 1
       debug("Collect final batch size %i job %i @%i: " % (len(collect), job, count))
       compute_snp(job,n,collect,lmm2,reml,q)
