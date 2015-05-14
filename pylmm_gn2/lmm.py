@@ -46,10 +46,9 @@ import simplejson as json
 try:
   from redis import Redis
   Redis = Redis()
+  import temp_data
 except ImportError:
   pass
-
-import temp_data
 
 has_gn2=None
 
