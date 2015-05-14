@@ -28,7 +28,6 @@ import os
 cwd = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 if cwd not in sys.path: 
     sys.path.insert(1,cwd+'/pylmm_gn2')
-print(sys.path)
 
 # pylmm modules
 import tsvreader
@@ -48,9 +47,16 @@ python runlmm.py [options] command
 
   Current commands are:
 
-    parse        : only parse input files
-    redis        : use Redis to call into GN2
-    kinship      : calculate (new) kinship matrix
+    run                 : default runner
+    parse               : only parse input files
+    redis, redis_new    : use Redis to call into GN2
+    kinship             : calculate kinship matrix
+
+  Examples:
+
+    ./bin/runlmm.py --pheno data/small.pheno --geno data/small.geno run
+    ./bin/runlmm.py --geno data/small_na.geno kinship --maf-normalization --test-kinship
+    ./bin/runlmm.py --pheno data/small_na.pheno --geno data/small_na.geno redis_new
 
   try --help for more information
 """
