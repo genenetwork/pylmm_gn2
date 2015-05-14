@@ -25,18 +25,13 @@ import numpy as np
 from scipy import linalg
 from scipy import optimize
 from scipy import stats
-# import pdb
-
-# import gzip
-# import zlib
 import datetime
-# import cPickle as pickle
 from pprint import pformat as pf
 
 # Add local dir to PYTHONPATH
 import os
 cwd = os.path.dirname(__file__)
-if sys.path[0] != cwd:
+if not cwd in sys.path:
     sys.path.insert(1,cwd)
 
 # pylmm imports
@@ -48,8 +43,12 @@ from benchmark import Bench
 
 # The following imports are for exchanging data with the webserver
 import simplejson as json
-from redis import Redis
-Redis = Redis()
+try:
+  from redis import Redis
+  Redis = Redis()
+except ImportError:
+  pass
+
 import temp_data
 
 has_gn2=None
