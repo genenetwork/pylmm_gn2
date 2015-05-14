@@ -7,17 +7,23 @@ from scipy import optimize
 from scipy import stats
 import cuda
 
+initializedMatrix = None
 useNumpy = None
 hasBLAS = None
 
 def matrix_initialize(useBLAS=True):
+    global initializedMatrix
     global useNumpy  # module based variable
+    global dgemm
 
+    if initializedMatrix:
+        sys.stderr.write("INFO: matrix_inialize called multiple times\n")
+        return
 
-    if useBLAS and useNumpy == None:
+    if useBLAS and useNumpy is None:
         print get_info('blas_opt')
         try:
-            linalg.fblas
+            from scipy.linalg.blas import dgemm
             sys.stderr.write("INFO: using linalg.fblas\n")
             useNumpy = False
             hasBLAS  = True
@@ -29,10 +35,15 @@ def matrix_initialize(useBLAS=True):
         useNumpy=True
     if cuda.useCUDA:
         sys.stderr.write("INFO: with CUDA support\n")
+    initializedMatrix = True
 
 
 def matrixMult(A,B):
+   global initializedMartix
    global useNumpy  # module based variables
+
+   if not initializedMatrix:
+       matrix_initialize()
 
    if cuda.useCUDA:
        return cuda.dot(A,B)
@@ -56,7 +67,7 @@ def matrixMult(A,B):
       BB = B
       transB = False
 
-   return linalg.fblas.dgemm(alpha=1.,a=AA,b=BB,trans_a=transA,trans_b=transB)
+   return dgemm(alpha=1.,a=AA,b=BB,trans_a=transA,trans_b=transB)
 
 def matrixMultT(M):
     # res = np.dot(W,W.T)

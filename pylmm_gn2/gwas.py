@@ -25,11 +25,10 @@ import lmm2
 import os
 import numpy as np
 import input
-from optmatrix import matrix_initialize
 from lmm2 import LMM2
 
 import multiprocessing as mp # Multiprocessing is part of the Python stdlib
-import Queue 
+import Queue
 
 # ---- A trick to decide on the environment:
 try:
@@ -68,9 +67,9 @@ def gwas(Y,G,K,restricted_max_likelihood=True,refit=False,verbose=True):
    GWAS. The G matrix should be n inds (cols) x m snps (rows)
    """
    info("In gwas.gwas")
-   matrix_initialize()
+   # matrix_initialize()
    cpu_num = mp.cpu_count()
-   numThreads = None # for now use all available threads
+   numThreads = 1 # for now use all available threads
    kfile2 = False
    reml = restricted_max_likelihood
 
@@ -91,13 +90,14 @@ def gwas(Y,G,K,restricted_max_likelihood=True,refit=False,verbose=True):
       info("Computing fit for null model")
       lmm2.fit()  # follow GN model in run_other
       info("heritability=%0.3f, sigma=%0.3f" % (lmm2.optH,lmm2.optSigma))
-            
+
    res = []
 
    # Set up the pool
    # mp.set_start_method('spawn')
    q = mp.Queue()
-   p = mp.Pool(numThreads, f_init, [q])
+   if numThreads is not None and numThreads != 1:
+       p = mp.Pool(numThreads, f_init, [q])
    collect = []
 
    count = 0

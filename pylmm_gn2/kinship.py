@@ -26,7 +26,7 @@ import multiprocessing as mp # Multiprocessing is part of the Python stdlib
 import Queue
 import time
 
-from optmatrix import matrix_initialize, matrixMultT
+from optmatrix import matrixMultT
 
 # ---- A trick to decide on the environment:
 try:
@@ -87,9 +87,9 @@ def f_init(q):
 
 # Calculate the kinship matrix from G (SNPs as rows!), returns K
 #
-def kinship(G,computeSize=1000,numThreads=None,useBLAS=False):
+def kinship(G,computeSize=1000,numThreads=1,useBLAS=False):
 
-   matrix_initialize(useBLAS)
+   # matrix_initialize(useBLAS)
 
    mprint("G",G)
    n = G.shape[1] # inds
@@ -100,9 +100,10 @@ def kinship(G,computeSize=1000,numThreads=None,useBLAS=False):
    assert snps>=inds, "snps should be larger than inds (%i snps, %i inds)" % (snps,inds)
 
    q = mp.Queue()
-   p = mp.Pool(numThreads, f_init, [q])
-   cpu_num = mp.cpu_count()
-   info("CPU cores: %i" % cpu_num)
+   if numThreads is not None and numThreads != 1:
+       p = mp.Pool(numThreads, f_init, [q])
+       cpu_num = mp.cpu_count()
+       info("CPU cores: %i" % cpu_num)
    iterations = snps/computeSize+1
 
    results = []
@@ -112,8 +113,12 @@ def kinship(G,computeSize=1000,numThreads=None,useBLAS=False):
    for job in range(iterations):
       info("Processing job %d first %d SNPs" % (job, ((job+1)*computeSize)))
       W = compute_W(job,G,n,snps,computeSize)
+      if W.shape[1] == 0:
+        continue
+
       if numThreads == 1:
          # Single-core
+         print(q)
          compute_matrixMult(job,W,q)
          j,x = q.get()
          debug("Job "+str(j)+" finished")
