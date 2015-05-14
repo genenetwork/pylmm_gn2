@@ -4,7 +4,16 @@ import numpy as np
 try:
   import pycuda.gpuarray as gpuarray
   import pycuda.autoinit
+except:
+  sys.stderr.write("INFO: no pycuda libs\n")
+
+try:
   import scikits.cuda.linalg as linalg
+except:
+  sys.stderr.write("INFO: no scikits libs\n")
+
+try:
+  linalg.init()
   useCUDA=True
   sys.stderr.write("INFO: Found CUDA libraries\n")
 except:
@@ -23,7 +32,6 @@ def dot(a,b):
     print("X=%d,Y=%d float size=%d (%f GB)" % (x,y,fpsize,(2.0*float(x)*float(y)+float(x)*float(x))*fpsize/1000000000.0))
     # sys.exit(1)
 
-    linalg.init()
     # print("Creating matrices\n")
     # a = np.asarray(np.random.rand(x,y), np.float32)
     # b = np.asarray(np.random.rand(y,x), np.float32)
