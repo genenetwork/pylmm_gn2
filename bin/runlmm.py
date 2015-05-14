@@ -1,3 +1,5 @@
+#! /usr/bin/env python
+#
 # This is the LMM runner that calls the possible methods using command line
 # switches. It acts as a multiplexer where all the invocation complexity
 # is kept outside the main LMM routines.
@@ -19,16 +21,17 @@
 
 from optparse import OptionParser
 import sys
-import tsvreader
 import numpy as np
 
 # Add local dir to PYTHONPATH
 import os
-cwd = os.path.dirname(__file__)
-if sys.path[0] != cwd:
-    sys.path.insert(1,cwd)
+cwd = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
+if cwd not in sys.path: 
+    sys.path.insert(1,cwd+'/pylmm_gn2')
+print(sys.path)
 
 # pylmm modules
+import tsvreader
 from lmm import gn2_load_redis, gn2_load_redis_iter, calculate_kinship_new, run_gwas
 from kinship import kinship, kinship_full
 import genotype
