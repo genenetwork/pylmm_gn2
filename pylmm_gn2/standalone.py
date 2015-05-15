@@ -56,9 +56,9 @@ def mprint(msg,data):
                   m[0][0:3]," ... ",m[0][-3:],"\n ",
                   m[1][0:3]," ... ",m[1][-3:],"\n  ...\n ",
                   m[-2][0:3]," ... ",m[-2][-3:],"\n ",
-                  m[-1][0:3]," ... ",m[-1][-3:],"]")
+                  m[-1][0:3]," ... ",m[-1][-3:],"] strides: ",m.strides,"\n")
     except IndexError:
-        print(m)
+        print(msg,m.shape,m,m.strides)
 
 def fatal(msg):
     logger.critical(msg)
