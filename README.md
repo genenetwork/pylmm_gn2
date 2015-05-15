@@ -19,10 +19,23 @@ and multi-core use are
 For CUDA dependencies are (in addition to a functional NVIDIA Tesla installation)
 
     pycuda
-    scikits
+    scikits.cuda
+
+You may need to add something like
+
+    export CUDA_ROOT=/usr/local/cuda-7.0
+    export PATH=$CUDA_ROOT/bin:$PATH
+    export LD_LIBRARY_PATH=$CUDA_ROOT/lib64
+
+Test CUDA support with
+
+    ./bin/cuda_properties.py
 
 ## Run
 
+By default pylmm finds CUDA and runs on the GPU. If there is no CUDA
+support multi-core numpy is used. To avoid CUDA use --no-cuda. To
+force BLAS use the --blas switch.
 
-## Multi-core support
 
+Pjotr Prins
