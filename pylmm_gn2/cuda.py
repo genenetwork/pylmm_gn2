@@ -34,50 +34,52 @@ def dot(x,y):
     cu.init()
     options = lmmoptions.get()
 
+    mprint("x",x)
+    mprint("y",y)
     if options.debug:
-        mprint("x",x)
-        mprint("y",y)
+        # First use numpy
+        npdot = np.dot(x,y)
+        if options.debug:
+          mprint("np.dot",npdot)
+        # A = np.asarray(x, np.float64)
+        # B = np.asarray(y, np.float64)
+        A = x
+        B = y
 
-    # First use numpy
-    npdot = np.dot(x,y)
-    if options.debug:
-      mprint("np.dot",npdot)
-    # A = np.asarray(x, np.float64)
-    # B = np.asarray(y, np.float64)
-    A = x
-    B = y
+        # Next use dgemm
+        if not A.flags['F_CONTIGUOUS']:
+            AA = A.T
+            transA = True
+            GtransA = 'T'
+        else:
+            AA = A
+            transA = False
+            GtransA = 'N'
 
-    # Next use dgemm
-    if not A.flags['F_CONTIGUOUS']:
-        AA = A.T
-        transA = True
-        GtransA = 'T'
-    else:
-        AA = A
-        transA = False
-        GtransA = 'N'
+        if not B.flags['F_CONTIGUOUS']:
+            BB = B.T
+            transB = True
+            GtransB = 'T'
+        else:
+            BB = B
+            transB = False
+            GtransB = 'N'
 
-    if not B.flags['F_CONTIGUOUS']:
-        BB = B.T
-        transB = True
-        GtransB = 'T'
-    else:
-        BB = B
-        transB = False
-        GtransB = 'N'
-
-    if options.debug:
-        mprint("AA",AA)
-        mprint("BB",BB)
+        if options.debug:
+            mprint("AA",AA)
+            mprint("BB",BB)
  
-    res = dgemm(alpha=1.,a=AA,b=BB,trans_a=transA,trans_b=transB)
-    assert np.allclose(res,npdot),"Numpy does not match linalg dgemm"
+        res = dgemm(alpha=1.,a=AA,b=BB,trans_a=transA,trans_b=transB)
+        assert np.allclose(res,npdot),"Numpy does not match linalg dgemm"
 
     # Now use GPU
-    a = A
-    b = B
+    a = x
+    b = y
     a_gpu = gpuarray.to_gpu(a)
     b_gpu = gpuarray.to_gpu(b)
+    c_gpu = None
+    a_f_order = a_gpu.strides[1] > a_gpu.strides[0]
+    b_f_order = b_gpu.strides[1] > b_gpu.strides[0]
 
     def dinfo():
         if options.debug:
@@ -87,13 +89,11 @@ def dot(x,y):
             print "b_gpu strides",b_gpu.strides
             print "a_gpu c flag",a_gpu.flags.c_contiguous
             print "b_gpu c flag",b_gpu.flags.c_contiguous
-            a_f_order = a_gpu.strides[1] > a_gpu.strides[0]
-            b_f_order = b_gpu.strides[1] > b_gpu.strides[0]
             print "a_f_order",a_f_order
             print "b_f_order",b_f_order
     # If strides are equal you can't tell the order. So we'll use numpy instead
     if a_gpu.strides[1] == a_gpu.strides[0] or b_gpu.strides[1] == b_gpu.strides[0]:
-        res = npdot
+        res = np.dot(x,y)
     else:
         info("Final order")
         if a_f_order and not b_f_order:
@@ -119,10 +119,11 @@ def dot(x,y):
                 info("No transpose")
                 c_gpu = cu.dot(a_gpu, b_gpu, 'N','N')
         # c_gpu = cu.dot(a_gpu, b_gpu, GtransA, GtransB)
-        mprint("cu.dot",c_gpu.get())
         res = c_gpu.get()
-    assert np.allclose(res,npdot),"GPU does not match numpy"
-    # return np.asarray(res)
-    return np.asarray(npdot)
+    mprint("cu.dot",res)
+    if options.debug:
+        assert np.allclose(res,npdot),"GPU does not match numpy"
+    return np.asarray(res)
+    # return np.asarray(npdot)
 
 

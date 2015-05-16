@@ -56,8 +56,7 @@ def matrixMult(A,B):
        matrix_initialize()
 
    if cuda.useCUDA:
-       # return cuda.dot(A,B)
-       return np.dot(A,B)
+       return cuda.dot(A,B)
 
    if useNumpy:
        return np.dot(A,B)
