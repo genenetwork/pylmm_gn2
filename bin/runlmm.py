@@ -26,7 +26,7 @@ import numpy as np
 # Add local dir to PYTHONPATH
 import os
 cwd = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
-if cwd not in sys.path: 
+if cwd not in sys.path:
     sys.path.insert(1,cwd+'/pylmm_gn2')
 
 # pylmm modules
@@ -238,7 +238,7 @@ elif cmd == 'kinship':
         print "Genotype",G.shape, "\n", G
         print "GN2 Kinship method",K2.shape,"\n",K2
         k2 = round(K2[0][0],4)
-    
+
     print "Genotype",G.shape, "\n", G
     K3 = kinship(G)
     print "third Kinship method",K3.shape,"\n",K3

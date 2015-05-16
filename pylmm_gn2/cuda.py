@@ -81,61 +81,65 @@ def dot(x,y):
     b_f_order = b_gpu.strides[1] > b_gpu.strides[0]
     print "a_f_order",a_f_order
     print "b_f_order",b_f_order
-
-    info("Final order")
-    if a_f_order and not b_f_order:
-        info("Transpose B")
-        b = b.T
-        b_gpu = gpuarray.to_gpu(b)
-        mprint("a",a)
-        mprint("b",b)
-        print "a_gpu strides",a_gpu.strides
-        print "b_gpu strides",b_gpu.strides
-        a_f_order = a_gpu.strides[1] > a_gpu.strides[0]
-        b_f_order = b_gpu.strides[1] > b_gpu.strides[0]
-        print "a_gpu c flag",a_gpu.flags.c_contiguous
-        print "b_gpu c flag",b_gpu.flags.c_contiguous
-        print "a_f_order",a_f_order
-        print "b_f_order",b_f_order
-        c_gpu = cu.dot(a_gpu, b_gpu, 'N','T')
-    elif b_f_order and not a_f_order:
-        info("Transpose A")
-        a = a.T
-        a_gpu = gpuarray.to_gpu(a)
-        mprint("a",a)
-        mprint("b",b)
-        print "a_gpu strides",a_gpu.strides
-        print "b_gpu strides",b_gpu.strides
-        print "a_gpu c flag",a_gpu.flags.c_contiguous
-        print "b_gpu c flag",b_gpu.flags.c_contiguous
-        a_f_order = a_gpu.strides[1] > a_gpu.strides[0]
-        b_f_order = b_gpu.strides[1] > b_gpu.strides[0]
-        print "a_f_order",a_f_order
-        print "b_f_order",b_f_order
-        c_gpu = cu.dot(a_gpu, b_gpu, 'T','N')
+    # If strides are equal you can't tell the order. So we'll use numpy instead
+    if a_gpu.strides[1] == a_gpu.strides[0] or b_gpu.strides[1] == b_gpu.strides[0]:
+        res = npdot
     else:
-        mprint("a",a)
-        mprint("b",b)
-        print "a_gpu strides",a_gpu.strides
-        print "b_gpu strides",b_gpu.strides
-        print "a_gpu c flag",a_gpu.flags.c_contiguous
-        print "b_gpu c flag",b_gpu.flags.c_contiguous
-        a_f_order = a_gpu.strides[1] > a_gpu.strides[0]
-        b_f_order = b_gpu.strides[1] > b_gpu.strides[0]
-        print "a_f_order",a_f_order
-        print "b_f_order",b_f_order
-        if a_gpu.flags.c_contiguous:
-            info("Double transpose")
-            a_gpu = gpuarray.to_gpu(a.T)
-            b_gpu = gpuarray.to_gpu(b.T)
-            c_gpu = cu.dot(a_gpu, b_gpu, 'T','T')
+        info("Final order")
+        if a_f_order and not b_f_order:
+            info("Transpose B")
+            b = b.T
+            b_gpu = gpuarray.to_gpu(b)
+            mprint("a",a)
+            mprint("b",b)
+            print "a_gpu strides",a_gpu.strides
+            print "b_gpu strides",b_gpu.strides
+            a_f_order = a_gpu.strides[1] > a_gpu.strides[0]
+            b_f_order = b_gpu.strides[1] > b_gpu.strides[0]
+            print "a_gpu c flag",a_gpu.flags.c_contiguous
+            print "b_gpu c flag",b_gpu.flags.c_contiguous
+            print "a_f_order",a_f_order
+            print "b_f_order",b_f_order
+            c_gpu = cu.dot(a_gpu, b_gpu, 'N','T')
+        elif b_f_order and not a_f_order:
+            info("Transpose A")
+            a = a.T
+            a_gpu = gpuarray.to_gpu(a)
+            mprint("a",a)
+            mprint("b",b)
+            print "a_gpu strides",a_gpu.strides
+            print "b_gpu strides",b_gpu.strides
+            print "a_gpu c flag",a_gpu.flags.c_contiguous
+            print "b_gpu c flag",b_gpu.flags.c_contiguous
+            a_f_order = a_gpu.strides[1] > a_gpu.strides[0]
+            b_f_order = b_gpu.strides[1] > b_gpu.strides[0]
+            print "a_f_order",a_f_order
+            print "b_f_order",b_f_order
+            c_gpu = cu.dot(a_gpu, b_gpu, 'T','N')
         else:
-            info("No transpose")
-            c_gpu = cu.dot(a_gpu, b_gpu, 'N','N')
-    c_gpu = cu.dot(a_gpu, b_gpu, GtransA, GtransB)
-    mprint("cu.dot",c_gpu.get())
-    res = c_gpu.get()
+            mprint("a",a)
+            mprint("b",b)
+            print "a_gpu strides",a_gpu.strides
+            print "b_gpu strides",b_gpu.strides
+            print "a_gpu c flag",a_gpu.flags.c_contiguous
+            print "b_gpu c flag",b_gpu.flags.c_contiguous
+            a_f_order = a_gpu.strides[1] > a_gpu.strides[0]
+            b_f_order = b_gpu.strides[1] > b_gpu.strides[0]
+            print "a_f_order",a_f_order
+            print "b_f_order",b_f_order
+            if a_gpu.flags.c_contiguous:
+                info("Double transpose")
+                a_gpu = gpuarray.to_gpu(a.T)
+                b_gpu = gpuarray.to_gpu(b.T)
+                c_gpu = cu.dot(a_gpu, b_gpu, 'T','T')
+            else:
+                info("No transpose")
+                c_gpu = cu.dot(a_gpu, b_gpu, 'N','N')
+        # c_gpu = cu.dot(a_gpu, b_gpu, GtransA, GtransB)
+        mprint("cu.dot",c_gpu.get())
+        res = c_gpu.get()
     assert np.allclose(res,npdot),"GPU does not match numpy"
-    return res
+    # return np.asarray(res)
+    return np.asarray(npdot)
 
 
