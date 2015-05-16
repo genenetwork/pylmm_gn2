@@ -38,6 +38,7 @@ import phenotype
 from standalone import uses
 import cuda
 import threads
+import lmmoptions
 
 progress,mprint,debug,info,fatal = uses('progress','mprint','debug','info','fatal')
 
@@ -85,6 +86,9 @@ parser.add_option("--remove-missing-phenotypes",
 parser.add_option("-q", "--quiet",
                   action="store_false", dest="verbose", default=True,
                   help="don't print status messages to stdout")
+parser.add_option("-d", "--debug",
+                  action="store_true", dest="debug", default=False,
+                  help="Debug")
 parser.add_option("--blas", action="store_true", default=False, dest="useBLAS", help="Use BLAS instead of numpy matrix multiplication")
 parser.add_option("--no-blas", action="store_true", default=False, dest="noBLAS", help="Disable BLAS support")
 parser.add_option("--no-cuda", action="store_true", default=False, dest="noCUDA", help="Disable CUDA support")
@@ -142,6 +146,9 @@ if options.noCUDA:
 
 if options.numThreads is not None:
     threads.numThreads = options.numThreads
+
+lmmoptions.set(options)
+print lmmoptions.get()
 
 def check_results(ps,ts):
     print np.array(ps)

@@ -8,6 +8,7 @@ from scipy import stats
 import cuda
 
 from standalone import uses
+import lmmoptions
 debug,info,mprint = uses('debug','info','mprint')
 
 initializedMatrix = None
@@ -47,8 +48,10 @@ def matrixMult(A,B):
    global initializedMartix
    global useNumpy  # module based variables
 
-   mprint("A",A)
-   mprint("B",B)
+   options = lmmoptions.get()
+   if options.debug:
+       mprint("A",A)
+       mprint("B",B)
    if not initializedMatrix:
        matrix_initialize()
 

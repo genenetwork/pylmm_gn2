@@ -91,7 +91,7 @@ def run_human(pheno_vector,
     keep = keep.reshape((len(keep),))
 
     identifier = str(uuid.uuid4())
-    
+
     #print("pheno_vector: ", pf(pheno_vector))
     #print("kinship_matrix: ", pf(kinship_matrix))
     #print("kinship_matrix.shape: ", pf(kinship_matrix.shape))
@@ -131,7 +131,7 @@ def run_human(pheno_vector,
     with Bench("Opening and loading pickle file"):
         with gzip.open(plink_input_file, "rb") as input_file:
             data = pickle.load(input_file)
-            
+
     plink_input = data['plink_input']
 
     #plink_input.getSNPIterator()
@@ -150,10 +150,10 @@ def run_human(pheno_vector,
         result_store = []
 
         key = "plink_inputs"
-        
+
         # Todo: Delete below line when done testing
         Redis.delete(key)
-        
+
         timestamp = datetime.datetime.utcnow().isoformat()
 
         # Pickle chunks of input SNPs (from Plink interator) and compress them
@@ -166,7 +166,7 @@ def run_human(pheno_vector,
                 timestamp = timestamp,
                 result = result
             ), pickle.HIGHEST_PROTOCOL)
-            
+
             #print("Adding:", part)
             Redis.rpush(key, zlib.compress(holder))
         #print("End adding loop")
@@ -191,13 +191,13 @@ def run_human(pheno_vector,
             #with Bench("after association"):
             p_values.append(ps)
             t_stats.append(ts)
-        
+
     return p_values, t_stats
 
 
 #class HumanAssociation(object):
 #    def __init__(self):
-#        
+#
 
 def human_association(snp,
                       n,
@@ -216,7 +216,7 @@ def human_association(snp,
     if v.sum():
         keeps = True - v
         xs = x[keeps,:]
-        # If no variation at this snp or all genotypes missing 
+        # If no variation at this snp or all genotypes missing
         if keeps.sum() <= 1 or xs.var() <= 1e-6:
             return np.nan, np.nan
             #p_values.append(np.nan)
@@ -231,7 +231,7 @@ def human_association(snp,
 
         filtered_pheno = pheno_vector[keeps]
         filtered_covariate_matrix = covariate_matrix[keeps,:]
-        
+
         print("kinship_matrix shape is: ", pf(kinship_matrix.shape))
         print("keeps is: ", pf(keeps.shape))
         filtered_kinship_matrix = kinship_matrix[keeps,:][:,keeps]
@@ -260,30 +260,30 @@ def human_association(snp,
 #        restricted_max_likelihood=True,
 #        refit=False,
 #        temp_data=None):
-    
+
 def run_other_old(pheno_vector,
         genotype_matrix,
         restricted_max_likelihood=True,
         refit=False):
-    
+
     """Takes the phenotype vector and genotype matrix and returns a set of p-values and t-statistics
-    
+
     restricted_max_likelihood -- whether to use restricted max likelihood; True or False
     refit -- whether to refit the variance component for each marker
-    
+
     """
-    
+
     print("Running the original LMM engine in run_other (old)")
     print("REML=",restricted_max_likelihood," REFIT=",refit)
     with Bench("Calculate Kinship"):
         kinship_matrix,genotype_matrix = calculate_kinship_new(genotype_matrix)
-    
+
     print("kinship_matrix: ", pf(kinship_matrix))
     print("kinship_matrix.shape: ", pf(kinship_matrix.shape))
-    
+
     # with Bench("Create LMM object"):
     #     lmm_ob = LMM(pheno_vector, kinship_matrix)
-    
+
     # with Bench("LMM_ob fitting"):
     #     lmm_ob.fit()
 
@@ -303,14 +303,14 @@ def run_other_new(n,m,pheno_vector,
         geno,
         restricted_max_likelihood=True,
         refit=False):
-    
+
     """Takes the phenotype vector and genotype matrix and returns a set of p-values and t-statistics
-    
+
     restricted_max_likelihood -- whether to use restricted max likelihood; True or False
     refit -- whether to refit the variance component for each marker
-    
+
     """
-    
+
     print("Running the new LMM2 engine in run_other_new")
     print("REML=",restricted_max_likelihood," REFIT=",refit)
 
@@ -326,7 +326,7 @@ def run_other_new(n,m,pheno_vector,
     geno = geno[:,keep]
     with Bench("Calculate Kinship"):
         K,G = calculate_kinship_new(geno)
-    
+
     print("kinship_matrix: ", pf(K))
     print("kinship_matrix.shape: ", pf(K.shape))
 
@@ -370,7 +370,7 @@ def matrixMult(A,B):
     else:
        AA = A
        transA = False
-    
+
     if not B.flags['F_CONTIGUOUS']:
        BB = B.T
        transB = True
@@ -381,7 +381,7 @@ def matrixMult(A,B):
     return linalg.fblas.dgemm(alpha=1.,a=AA,b=BB,trans_a=transA,trans_b=transB)
 
 def calculate_kinship_new(genotype_matrix):
-    """ 
+    """
     Call the new kinship calculation where genotype_matrix contains
     inds (columns) by snps (rows).
     """
@@ -394,7 +394,7 @@ def calculate_kinship_new(genotype_matrix):
     # return kinship(G),G # G gets transposed, we'll turn this into an iterator (FIXME)
 
 def calculate_kinship_iter(geno):
-    """ 
+    """
     Call the new kinship calculation where genotype_matrix contains
     inds (columns) by snps (rows).
     """
@@ -407,10 +407,10 @@ def calculate_kinship_iter(geno):
 def calculate_kinship_old(genotype_matrix):
     """
     genotype_matrix is an n x m matrix encoding SNP minor alleles.
-    
+
     This function takes a matrix oF SNPs, imputes missing values with the maf,
     normalizes the resulting vectors and returns the RRM matrix.
-    
+
     """
     info("call calculate_kinship_old")
     fatal("THE FUNCTION calculate_kinship_old IS OBSOLETE, use calculate_kinship_new instead - see Genotype Normalization Problem on Pjotr's blog")
@@ -425,11 +425,11 @@ def calculate_kinship_old(genotype_matrix):
         #print("type of genotype_matrix[:,counter]:", pf(genotype_matrix[:,counter]))
         #Checks if any values in column are not numbers
         not_number = np.isnan(genotype_matrix[:,counter])
-        
+
         #Gets vector of values for column (no values in vector if not all values in col are numbers)
         marker_values = genotype_matrix[True - not_number, counter]
         #print("marker_values is:", pf(marker_values))
-        
+
         #Gets mean of values in vector
         values_mean = marker_values.mean()
 
@@ -440,7 +440,7 @@ def calculate_kinship_old(genotype_matrix):
         keep.append(counter)
         genotype_matrix[:,counter] = (genotype_matrix[:,counter] - values_mean) / np.sqrt(vr)
         progress('kinship_old normalize genotype',counter,m)
-        
+
     genotype_matrix = genotype_matrix[:,keep]
     mprint("G (after old normalize)",genotype_matrix.T)
     kinship_matrix = np.dot(genotype_matrix, genotype_matrix.T) * 1.0/float(m)
@@ -469,13 +469,13 @@ def GWAS(pheno_vector,
     covariate_matrix - n x q covariate matrix
     restricted_max_likelihood - use restricted maximum likelihood
     refit - refit the variance component for each SNP
-    
+
     """
     if kinship_eigen_vals is None:
         kinship_eigen_vals = []
     if kinship_eigen_vectors is None:
         kinship_eigen_vectors = []
-    
+
     n = genotype_matrix.shape[0]
     m = genotype_matrix.shape[1]
 
@@ -505,10 +505,10 @@ def GWAS(pheno_vector,
 
     p_values = []
     t_statistics = []
-    
+
     n = genotype_matrix.shape[0]
     m = genotype_matrix.shape[1]
-    
+
     for counter in range(m):
         x = genotype_matrix[:,counter].reshape((n, 1))
         v = np.isnan(x).reshape((-1,))
@@ -519,7 +519,7 @@ def GWAS(pheno_vector,
                 p_values.append(0)
                 t_statistics.append(np.nan)
                 continue
-            
+
             print(genotype_matrix.shape,pheno_vector.shape,keep.shape)
 
             pheno_vector = pheno_vector[keep]
@@ -542,9 +542,9 @@ def GWAS(pheno_vector,
             if refit:
                 lmm_ob.fit(X=x)
             ts, ps, beta, betaVar = lmm_ob.association(x, REML=restricted_max_likelihood)
-            
+
         progress("gwas_old",counter,m)
-        
+
         p_values.append(ps)
         t_statistics.append(ts)
 
@@ -554,21 +554,21 @@ def GWAS(pheno_vector,
 class LMM:
 
     """
-          This is a simple version of EMMA/fastLMM.  
+          This is a simple version of EMMA/fastLMM.
           The main purpose of this module is to take a phenotype vector (Y), a set of covariates (X) and a kinship matrix (K)
           and to optimize this model by finding the maximum-likelihood estimates for the model parameters.
           There are three model parameters: heritability (h), covariate coefficients (beta) and the total
           phenotypic variance (sigma).
-          Heritability as defined here is the proportion of the total variance (sigma) that is attributed to 
+          Heritability as defined here is the proportion of the total variance (sigma) that is attributed to
           the kinship matrix.
- 
+
           For simplicity, we assume that everything being input is a numpy array.
           If this is not the case, the module may throw an error as conversion from list to numpy array
           is not done consistently.
- 
+
     """
     def __init__(self,Y,K,Kva=[],Kve=[],X0=None,verbose=True):
- 
+
        """
        The constructor takes a phenotype vector or array of size n.
        It takes a kinship matrix of size n x n.  Kva and Kve can be computed as Kva,Kve = linalg.eigh(K) and cached.
@@ -579,7 +579,7 @@ class LMM:
 
        if X0 is None: X0 = np.ones(len(Y)).reshape(len(Y),1)
        self.verbose = verbose
- 
+
        #x = Y != -9
        x = True - np.isnan(Y)
        #pdb.set_trace()
@@ -594,9 +594,9 @@ class LMM:
           Kva = []
           Kve = []
        self.nonmissing = x
- 
+
        print("this K is:", K.shape, pf(K))
-       
+
        if len(Kva) == 0 or len(Kve) == 0:
           # if self.verbose: sys.stderr.write("Obtaining eigendecomposition for %dx%d matrix\n" % (K.shape[0],K.shape[1]) )
           begin = time.time()
@@ -619,29 +619,29 @@ class LMM:
        # if sum(self.Kva < 1e-6):
        #    if self.verbose: sys.stderr.write("Cleaning %d eigen values\n" % (sum(self.Kva < 0)))
        #    self.Kva[self.Kva < 1e-6] = 1e-6
- 
+
        self.transform()
 
     def transform(self):
- 
+
          """
             Computes a transformation on the phenotype vector and the covariate matrix.
-            The transformation is obtained by left multiplying each parameter by the transpose of the 
+            The transformation is obtained by left multiplying each parameter by the transpose of the
             eigenvector matrix of K (the kinship).
          """
-     
+
          self.Yt = matrixMult(self.Kve.T, self.Y)
          self.X0t = matrixMult(self.Kve.T, self.X0)
          self.X0t_stack = np.hstack([self.X0t, np.ones((self.N,1))])
          self.q = self.X0t.shape[1]
 
     def getMLSoln(self,h,X):
- 
+
        """
           Obtains the maximum-likelihood estimates for the covariate coefficients (beta),
-          the total variance of the trait (sigma) and also passes intermediates that can 
+          the total variance of the trait (sigma) and also passes intermediates that can
           be utilized in other functions. The input parameter h is a value between 0 and 1 and represents
-          the heritability or the proportion of the total variance attributed to genetics.  The X is the 
+          the heritability or the proportion of the total variance attributed to genetics.  The X is the
           covariate matrix.
        """
 
@@ -654,34 +654,34 @@ class LMM:
        Q = np.dot(Yt.T*S,Yt)
        sigma = Q * 1.0 / (float(self.N) - float(X.shape[1]))
        return beta,sigma,Q,XX_i,XX
- 
-    def LL_brent(self,h,X=None,REML=False): 
+
+    def LL_brent(self,h,X=None,REML=False):
        #brent will not be bounded by the specified bracket.
        # I return a large number if we encounter h < 0 to avoid errors in LL computation during the search.
        if h < 0: return 1e6
        return -self.LL(h,X,stack=False,REML=REML)[0]
-         
+
     def LL(self,h,X=None,stack=True,REML=False):
- 
+
         """
-           Computes the log-likelihood for a given heritability (h).  If X==None, then the 
+           Computes the log-likelihood for a given heritability (h).  If X==None, then the
            default X0t will be used.  If X is set and stack=True, then X0t will be matrix concatenated with
            the input X.  If stack is false, then X is used in place of X0t in the LL calculation.
            REML is computed by adding additional terms to the standard LL and can be computed by setting REML=True.
         """
- 
+
         if X is None:
             X = self.X0t
-        elif stack: 
+        elif stack:
             self.X0t_stack[:,(self.q)] = matrixMult(self.Kve.T,X)[:,0]
             X = self.X0t_stack
- 
+
         n = float(self.N)
         q = float(X.shape[1])
         beta,sigma,Q,XX_i,XX = self.getMLSoln(h,X)
         LL = n*np.log(2*np.pi) + np.log(h*self.Kva + (1.0-h)).sum() + n + n*np.log(1.0/n * Q)
         LL = -0.5 * LL
- 
+
         if REML:
             LL_REML_part = q*np.log(2.0*np.pi*sigma) + np.log(linalg.det(matrixMult(X.T,X))) - np.log(linalg.det(XX))
             LL = LL + 0.5*LL_REML_part
@@ -689,23 +689,23 @@ class LMM:
         return LL,beta,sigma,XX_i
 
     def getMax(self,H, X=None,REML=False):
- 
+
         """
-           Helper functions for .fit(...).  
-           This function takes a set of LLs computed over a grid and finds possible regions 
-           containing a maximum.  Within these regions, a Brent search is performed to find the 
+           Helper functions for .fit(...).
+           This function takes a set of LLs computed over a grid and finds possible regions
+           containing a maximum.  Within these regions, a Brent search is performed to find the
            optimum.
-  
+
         """
         n = len(self.LLs)
         HOpt = []
         for i in range(1,n-2):
-            if self.LLs[i-1] < self.LLs[i] and self.LLs[i] > self.LLs[i+1]: 
+            if self.LLs[i-1] < self.LLs[i] and self.LLs[i] > self.LLs[i+1]:
                 HOpt.append(optimize.brent(self.LL_brent,args=(X,REML),brack=(H[i-1],H[i+1])))
                 if np.isnan(HOpt[-1][0]):
                     HOpt[-1][0] = [self.LLs[i-1]]
 
-        if len(HOpt) > 1: 
+        if len(HOpt) > 1:
             if self.verbose:
                 sys.stderr.write("NOTE: Found multiple optima.  Returning first...\n")
             return HOpt[0]
@@ -717,69 +717,69 @@ class LMM:
             return H[n-1]
 
     def fit(self,X=None,ngrids=100,REML=True):
- 
+
         """
             Finds the maximum-likelihood solution for the heritability (h) given the current parameters.
-            X can be passed and will transformed and concatenated to X0t.  Otherwise, X0t is used as 
+            X can be passed and will transformed and concatenated to X0t.  Otherwise, X0t is used as
             the covariate matrix.
-   
+
             This function calculates the LLs over a grid and then uses .getMax(...) to find the optimum.
             Given this optimum, the function computes the LL and associated ML solutions.
         """
-     
+
         if X == None:
             X = self.X0t
-        else: 
+        else:
             #X = np.hstack([self.X0t,matrixMult(self.Kve.T, X)])
             self.X0t_stack[:,(self.q)] = matrixMult(self.Kve.T,X)[:,0]
             X = self.X0t_stack
-  
+
         H = np.array(range(ngrids)) / float(ngrids)
         L = np.array([self.LL(h,X,stack=False,REML=REML)[0] for h in H])
         self.LLs = L
-  
+
         hmax = self.getMax(H,X,REML)
         L,beta,sigma,betaSTDERR = self.LL(hmax,X,stack=False,REML=REML)
-        
+
         self.H = H
         self.optH = hmax
         self.optLL = L
         self.optBeta = beta
         self.optSigma = sigma
-  
+
         return hmax,beta,sigma,L
 
     def association(self,X, h = None, stack=True,REML=True, returnBeta=True):
- 
+
         """
             Calculates association statitics for the SNPs encoded in the vector X of size n.
             If h == None, the optimal h stored in optH is used.
-  
+
         """
-        if stack: 
+        if stack:
            #X = np.hstack([self.X0t,matrixMult(self.Kve.T, X)])
            self.X0t_stack[:,(self.q)] = matrixMult(self.Kve.T,X)[:,0]
            X = self.X0t_stack
-           
+
         if h == None:
             h = self.optH
-  
+
         L,beta,sigma,betaVAR = self.LL(h,X,stack=False,REML=REML)
         q  = len(beta)
         ts,ps = self.tstat(beta[q-1],betaVAR[q-1,q-1],sigma,q)
-        
+
         if returnBeta:
             return ts,ps,beta[q-1].sum(),betaVAR[q-1,q-1].sum()*sigma
         return ts,ps
 
-    def tstat(self,beta,var,sigma,q): 
- 
+    def tstat(self,beta,var,sigma,q):
+
           """
              Calculates a t-statistic and associated p-value given the estimate of beta and its standard error.
              This is actually an F-test, but when only one hypothesis is being performed, it reduces to a t-test.
           """
- 
-          ts = beta / np.sqrt(var * sigma)        
+
+          ts = beta / np.sqrt(var * sigma)
           ps = 2.0*(1.0 - stats.t.cdf(np.abs(ts), self.N-q))
           if not len(ts) == 1 or not len(ps) == 1:
               print("ts=",ts)
@@ -788,22 +788,22 @@ class LMM:
           return ts.sum(),ps.sum()
 
     def plotFit(self,color='b-',title=''):
- 
+
        """
-          Simple function to visualize the likelihood space.  It takes the LLs 
+          Simple function to visualize the likelihood space.  It takes the LLs
           calcualted over a grid and normalizes them by subtracting off the mean and exponentiating.
           The resulting "probabilities" are normalized to one and plotted against heritability.
           This can be seen as an approximation to the posterior distribuiton of heritability.
- 
-          For diagnostic purposes this lets you see if there is one distinct maximum or multiple 
+
+          For diagnostic purposes this lets you see if there is one distinct maximum or multiple
           and what the variance of the parameter looks like.
        """
        import matplotlib.pyplot as pl
- 
+
        mx = self.LLs.max()
        p = np.exp(self.LLs - mx)
        p = p/p.sum()
- 
+
        pl.plot(self.H,p,color)
        pl.xlabel("Heritability")
        pl.ylabel("Probability of data")
@@ -815,7 +815,7 @@ def run_gwas(species,n,m,k,y,geno,cov=None,reml=True,refit=False,inputfn=None,ne
     """
     info("run_gwas")
     print('pheno', y)
-    
+
     if species == "human" :
         print('kinship', k )
         ps, ts = run_human(pheno_vector = y,
@@ -844,9 +844,9 @@ def gwas_with_redis(key,species,new_code=True):
     version. All the Redis code goes here!
     """
     json_params = Redis.get(key)
-    
+
     params = json.loads(json_params)
-    
+
     tempdata = temp_data.TempData(params['temp_uuid'])
     def update_tempdata(loc,i,total):
         """
@@ -882,7 +882,7 @@ def gwas_with_redis(key,species,new_code=True):
         if m is not None:
             return m.T
         return m
-    
+
     # We are transposing before we enter run_gwas - this should happen on the webserver
     # side (or when reading data from file)
     k = marray('kinship_matrix')
@@ -895,13 +895,13 @@ def gwas_with_redis(key,species,new_code=True):
       m = g.shape[0]
     info("m=%d,n=%d" % (m,n))
     ps,ts = run_gwas(species,n,m,k,y,g,narray('covariate_matrix'),params['restricted_max_likelihood'],params['refit'],params.get('input_file_name'),new_code)
-        
+
     results_key = "pylmm:results:" + params['temp_uuid']
 
     # fatal(results_key)
     json_results = json.dumps(dict(p_values = ps,
                                    t_stats = ts))
-    
+
     #Pushing json_results into a list where it is the only item because blpop needs a list
     Redis.rpush(results_key, json_results)
     Redis.expire(results_key, 60*60)
@@ -926,10 +926,10 @@ def gn2_load_redis(key,species,kinship,pheno,geno,new_code=True):
                   restricted_max_likelihood = True,
                   refit = False,
                   temp_uuid = "testrun_temp_uuid",
-                        
+
                   # meta data
                   timestamp = datetime.datetime.now().isoformat())
-            
+
     json_params = json.dumps(params)
     Redis.set(key, json_params)
     Redis.expire(key, 60*60)
@@ -946,7 +946,7 @@ def gn2_load_redis_iter(key,species,kinship,pheno,geno_iterator):
         gkey = key+'_geno_'+str(i)
         Redis.set(gkey, genotypes)
         Redis.expire(gkey, 60*60)
-    
+
     if kinship == None:
         k = None
     else:
@@ -960,11 +960,11 @@ def gn2_load_redis_iter(key,species,kinship,pheno,geno_iterator):
                   restricted_max_likelihood = True,
                   refit = False,
                   temp_uuid = "testrun_temp_uuid",
-                        
+
                   # meta data
                   timestamp = datetime.datetime.now().isoformat(),
     )
-            
+
     json_params = json.dumps(params)
     Redis.set(key, json_params)
     Redis.expire(key, 60*60)
@@ -979,9 +979,9 @@ def gn2_main():
     parser = argparse.ArgumentParser(description='Run pyLMM')
     parser.add_argument('-k', '--key')
     parser.add_argument('-s', '--species')
-    
+
     opts = parser.parse_args()
-    
+
     key = opts.key
     species = opts.species
 

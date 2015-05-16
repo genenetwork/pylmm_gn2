@@ -27,6 +27,8 @@ import kinship
 sys.stderr.write("INFO: pylmm (lmm2) system path is "+":".join(sys.path)+"\n")
 sys.stderr.write("INFO: pylmm (lmm2) file is "+__file__+"\n")
 
+from lmmoptions import options
+
 # ---- A trick to decide on the environment:
 try:
     sys.stderr.write("INFO: lmm2 try loading module\n")
@@ -265,14 +267,12 @@ class LMM2:
       return -self.LL(h,X,stack=False,REML=REML)[0]
 
    def LL(self,h,X=None,stack=True,REML=False):
-
       """
          Computes the log-likelihood for a given heritability (h).  If X==None, then the
          default X0t will be used.  If X is set and stack=True, then X0t will be matrix concatenated with
          the input X.  If stack is false, then X is used in place of X0t in the LL calculation.
          REML is computed by adding additional terms to the standard LL and can be computed by setting REML=True.
       """
-      info("***** LL entered")
 
       if X is None: X = self.X0t
       elif stack:
@@ -284,15 +284,12 @@ class LMM2:
       beta,sigma,Q,XX_i,XX = self.getMLSoln(h,X)
       LL = n*np.log(2*np.pi) + np.log(h*self.Kva + (1.0-h)).sum() + n + n*np.log(1.0/n * Q)
       LL = -0.5 * LL
-      mprint("X",X)
 
       if REML:
          LL_REML_part = q*np.log(2.0*np.pi*sigma) + np.log(det(matrixMultT(X.T))) - np.log(det(XX))
          LL = LL + 0.5*LL_REML_part
 
-
       LL = LL.sum()
-      debug("LL exit")
       return LL,beta,sigma,XX_i
 
    def getMax(self,H, X=None,REML=False):
