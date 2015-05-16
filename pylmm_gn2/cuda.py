@@ -1,5 +1,9 @@
 import sys
-from scipy.linalg.blas import dgemm
+
+try:
+  from scipy.linalg.blas import dgemm
+except:
+  sys.stderr.write("INFO: no scipy.linalg.blas libs\n")
 
 try:
   import pycuda.gpuarray as gpuarray
@@ -7,7 +11,6 @@ try:
 except:
   sys.stderr.write("INFO: no pycuda libs\n")
 
-import scikits.cuda.linalg as cu
 try:
   import numpy as np
   import scikits.cuda.linalg as cu
