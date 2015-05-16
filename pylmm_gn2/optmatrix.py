@@ -56,10 +56,14 @@ def matrixMult(A,B):
        matrix_initialize()
 
    if cuda.useCUDA:
-       return cuda.dot(A,B)
+       res = cuda.dot(A,B)
+       mprint("dot",res)
+       return res
 
    if useNumpy:
-       return np.dot(A,B)
+       res = np.dot(A,B)
+       mprint("dot",res)
+       return res
 
    # If the matrices are in Fortran order then the computations will be faster
    # when using dgemm.  Otherwise, the function will copy the matrix and that takes time.
