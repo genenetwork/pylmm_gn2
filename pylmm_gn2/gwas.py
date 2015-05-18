@@ -31,14 +31,7 @@ import threads
 import multiprocessing as mp # Multiprocessing is part of the Python stdlib
 import Queue
 
-# ---- A trick to decide on the environment:
-try:
-    from wqflask.my_pylmm.pyLMM import chunks
-    from gn2 import uses
-except ImportError:
-    has_gn2=False
-    from standalone import uses
-
+from standalone import uses
 progress,mprint,debug,info,fatal = uses('progress','mprint','debug','info','fatal')
 
 

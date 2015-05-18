@@ -19,15 +19,8 @@
 import sys
 import numpy as np
 
-# ---- A trick to decide on the environment:
-try:
-    from wqflask.my_pylmm.pyLMM import chunks
-    from gn2 import uses, progress_set_func
-except ImportError:
-    has_gn2=False
-    import standalone as handlers
-    from standalone import uses, progress_set_func
-
+import standalone as handlers
+from standalone import uses, progress_set_func
 progress,debug,info,mprint = uses('progress','debug','info','mprint')
 
 def remove_missing(n,y,g):

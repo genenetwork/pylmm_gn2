@@ -29,19 +29,8 @@ sys.stderr.write("INFO: pylmm (lmm2) file is "+__file__+"\n")
 
 from lmmoptions import options
 
-# ---- A trick to decide on the environment:
-try:
-    sys.stderr.write("INFO: lmm2 try loading module\n")
-    import utility.formatting # this is never used, just to check the environment
-    sys.stderr.write("INFO: This is a genenetwork2 environment (lmm2)\n")
-    from gn2 import uses, progress_set_func
-except ImportError:
-    # Failed to load gn2
-    has_gn2=False
-    import standalone as handlers
-    from standalone import uses, progress_set_func
-    sys.stderr.write("WARNING: LMM2 standalone version missing the Genenetwork2 environment\n")
-
+import standalone as handlers
+from standalone import uses, progress_set_func
 progress,mprint,debug,info,fatal = uses('progress','mprint','debug','info','fatal')
 
 
