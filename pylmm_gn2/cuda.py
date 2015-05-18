@@ -30,10 +30,10 @@ import lmmoptions
 debug,info,mprint = uses('debug','info','mprint')
 
 import timeit
+cu.init()
 
 def dot(x,y):
 
-    cu.init()
     options = lmmoptions.get()
 
     if options.debug:
@@ -104,10 +104,10 @@ def dot(x,y):
                 raise Exception("Flags out of order")
     # If strides are equal you can't tell the order. So we'll use numpy instead
     if a_gpu.strides[1] == a_gpu.strides[0] or b_gpu.strides[1] == b_gpu.strides[0]:
+        if options.debug:
+           info("Usign numpy instead of CUDA")
         return np.dot(x,y)
     else:
-        if options.debug:
-            info("Final order")
         if a_f_order and not b_f_order:
             if options.debug:
                 info("Transpose B (b_gpu)")
@@ -125,7 +125,7 @@ def dot(x,y):
         else:
             dinfo()
             if a_gpu.flags.c_contiguous:
-                info("Double transpose")
+                info("Double transpose - don't expect this to happen")
                 a_gpu = gpuarray.to_gpu(a.T)
                 b_gpu = gpuarray.to_gpu(b.T)
                 c_gpu = cu.dot(a_gpu, b_gpu, 'T','T')
@@ -133,8 +133,6 @@ def dot(x,y):
                 if options.debug:
                     info("No transpose")
                 c_gpu = cu.dot(a_gpu, b_gpu, 'N','N')
-            # raise Exception("This is weird")
-        # c_gpu = cu.dot(a_gpu, b_gpu, GtransA, GtransB)
         res = c_gpu.get()
     if options.debug:
         mprint("numpy.dot",npdot)
@@ -151,6 +149,8 @@ def dot(x,y):
         assert res.shape == npdot.shape
         assert res.strides == npdot.strides
         debug("exit CUDA dot product - all tests pass")
-    return np.asarray(res)
+    return res
+    # return np.ascontiguousarray(res)
+    # return np.asarray(res)
 
 
