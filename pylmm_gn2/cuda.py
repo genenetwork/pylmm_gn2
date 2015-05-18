@@ -38,64 +38,21 @@ def dot(x,y):
 
     options = lmmoptions.get()
 
-    if options.debug:
-        debug("enter CUDA dot product")
-        mprint("x",x)
-        mprint("y",y)
-        # First use numpy
-        npdot = np.dot(x,y)
-        if options.useBLAS:
-            # A = np.asarray(x, np.float64)
-            # B = np.asarray(y, np.float64)
-            A = x
-            B = y
-
-            # Next use dgemm
-            if not A.flags['F_CONTIGUOUS']:
-                AA = A.T
-                transA = True
-                GtransA = 'T'
-            else:
-                AA = A
-                transA = False
-                GtransA = 'N'
-
-            if not B.flags['F_CONTIGUOUS']:
-                BB = B.T
-                transB = True
-                GtransB = 'T'
-            else:
-                BB = B
-                transB = False
-                GtransB = 'N'
-
-            res = dgemm(alpha=1.,a=AA,b=BB,trans_a=transA,trans_b=transB)
-            assert np.allclose(res,npdot),"Numpy does not match linalg dgemm"
-            # res.reshape(npdot.shape)
-            print "res.strides",res.strides
-            print "npdot.strides",npdot.strides
-            # assert res.strides==npdot.strides
-
+    debug("enter CUDA dot product")
     size = x.shape[0]*x.shape[1]+y.shape[0]*y.shape[1]
     fpsize = 8
     # If strides are equal you can't tell the order. So we'll use numpy instead
-    if x.strides[1] == x.strides[0] or y.strides[1] == y.strides[0] or size*fpsize<100000:
-        # debug("Usign numpy instead of CUDA")
+    if x.strides[1] == x.strides[0] or y.strides[1] == y.strides[0] or size*fpsize<20000:
+        debug("Usign numpy instead of CUDA")
         return np.dot(x,y)
 
-    # Now use GPU
     a = x
     b = y
+    a_f_order = a.flags.f_contiguous
+    b_f_order = b.flags.f_contiguous
     if cuda_lock.locked():
         debug("Waiting for cuda_lock")
-    with cuda_lock:
-        debug("CUDA allocate size=%d x %d (%f GB)" % (size,fpsize,(float(size)*fpsize/1000000000.0)))
-        # cu.init()
-        a_gpu = gpuarray.to_gpu(a)
-        b_gpu = gpuarray.to_gpu(b)
-        c_gpu = None
-        a_f_order = a_gpu.strides[1] > a_gpu.strides[0]
-        b_f_order = b_gpu.strides[1] > b_gpu.strides[0]
+    debug("CUDA allocate size=%d x %d (%f GB)" % (size,fpsize,(float(size)*fpsize/1000000000.0)))
 
     def dinfo():
         if options.debug:
@@ -118,20 +75,21 @@ def dot(x,y):
                 raise Exception("Flags out of order")
 
     res = None
+
     with cuda_lock:
         if a_f_order and not b_f_order:
-            if options.debug:
-                info("Transpose B (b_gpu)")
+            debug("Transpose B (b_gpu)")
             b = b.T
+            a_gpu = gpuarray.to_gpu(a)
             b_gpu = gpuarray.to_gpu(b)
             dinfo()
             c_gpu = cu.dot(a_gpu, b_gpu, 'N','T')
             res = c_gpu.get()
         elif b_f_order and not a_f_order:
-            if options.debug:
-                info("Transpose A (a_gpu)")
+            debug("Transpose A (a_gpu)")
             a = a.T
             a_gpu = gpuarray.to_gpu(a)
+            b_gpu = gpuarray.to_gpu(b)
             dinfo()
             c_gpu = cu.dot(a_gpu, b_gpu, 'T','N')
             res = c_gpu.get()
@@ -145,6 +103,8 @@ def dot(x,y):
             else:
                 if options.debug:
                     info("No transpose")
+                a_gpu = gpuarray.to_gpu(a)
+                b_gpu = gpuarray.to_gpu(b)
                 c_gpu = cu.dot(a_gpu, b_gpu, 'N','N')
                 res = c_gpu.get()
     if options.debug:
@@ -152,9 +112,6 @@ def dot(x,y):
         res = np.ascontiguousarray(res)
         mprint("cu.dot",res)
         assert np.allclose(res,npdot),"GPU does not match numpy"
-        # Update strides
-        debug("Note we are updating strides by hand here!")
-        # res=np.lib.stride_tricks.as_strided(res, shape=npdot.shape, strides=npdot.strides)
         print "res.shape",res.shape
         print "npdot.shape",npdot.shape
         print "res.strides",res.strides
@@ -163,7 +120,5 @@ def dot(x,y):
         assert res.strides == npdot.strides
     debug("exit CUDA dot product - all tests pass")
     return res
-    # return np.ascontiguousarray(res)
-    # return np.asarray(res)
 
 

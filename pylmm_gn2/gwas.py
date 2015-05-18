@@ -106,13 +106,13 @@ def gwas(Y,G,K,restricted_max_likelihood=True,refit=False,verbose=True):
       count += 1
       if count % 1000 == 0:
          job += 1
-         debug("Job %d At SNP %d" % (job,count))
+         info("Job %d At SNP %d" % (job,count))
          if threads.single():
             debug("Running on 1 THREAD")
             compute_snp(job,n,collect,lmm2,reml,q)
             collect = []
             j,lst = q.get()
-            debug("Job "+str(j)+" finished")
+            info("Job "+str(j)+" finished")
             jobs_completed += 1
             progress("GWAS2",jobs_completed,snps/1000)
             res.append((j,lst))
@@ -124,7 +124,7 @@ def gwas(Y,G,K,restricted_max_likelihood=True,refit=False,verbose=True):
             while jobs_running >= cpu_num: # throttle maximum jobs
                try:
                   j,lst = q.get(False,3)
-                  debug("Job "+str(j)+" finished")
+                  info("Job "+str(j)+" finished")
                   jobs_completed += 1
                   progress("GWAS2",jobs_completed,snps/1000)
                   res.append((j,lst))
@@ -149,7 +149,7 @@ def gwas(Y,G,K,restricted_max_likelihood=True,refit=False,verbose=True):
       collect = []
    for job in range(jobs_running):
       j,lst = q.get(True,15) # time out
-      debug("Job "+str(j)+" finished")
+      info("Job "+str(j)+" finished")
       jobs_running -= 1
       debug("jobs_running cleanup (-) %d" % jobs_running)
       jobs_completed += 1
