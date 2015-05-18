@@ -30,12 +30,12 @@ import lmmoptions
 debug,info,mprint = uses('debug','info','mprint')
 
 import threading
-lock = threading.Lock()
+cuda_lock = threading.Lock()
 
 cu.init()
 
 def dot(x,y):
-    global lock
+    global cuda_lock
 
     options = lmmoptions.get()
 
@@ -80,11 +80,12 @@ def dot(x,y):
     # Now use GPU
     a = x
     b = y
-    a_gpu = gpuarray.to_gpu(a)
-    b_gpu = gpuarray.to_gpu(b)
-    c_gpu = None
-    a_f_order = a_gpu.strides[1] > a_gpu.strides[0]
-    b_f_order = b_gpu.strides[1] > b_gpu.strides[0]
+    with cuda_lock:
+        a_gpu = gpuarray.to_gpu(a)
+        b_gpu = gpuarray.to_gpu(b)
+        c_gpu = None
+        a_f_order = a_gpu.strides[1] > a_gpu.strides[0]
+        b_f_order = b_gpu.strides[1] > b_gpu.strides[0]
 
     def dinfo():
         if options.debug:
@@ -105,44 +106,43 @@ def dot(x,y):
                 raise Exception("Flags out of order")
             if b_f_order and not b_gpu.flags.f_contiguous:
                 raise Exception("Flags out of order")
+
     res = None
-    if lock.locked():
-        debug("Waiting for lock")
+    if cuda_lock.locked():
+        debug("Waiting for cuda_lock")
     # If strides are equal you can't tell the order. So we'll use numpy instead
     if a_gpu.strides[1] == a_gpu.strides[0] or b_gpu.strides[1] == b_gpu.strides[0]:
         if options.debug:
            info("Usign numpy instead of CUDA")
         return np.dot(x,y)
     else:
-        if a_f_order and not b_f_order:
-            if options.debug:
-                info("Transpose B (b_gpu)")
-            b = b.T
-            b_gpu = gpuarray.to_gpu(b)
-            dinfo()
-            with lock:
+        with cuda_lock:
+            if a_f_order and not b_f_order:
+                if options.debug:
+                    info("Transpose B (b_gpu)")
+                b = b.T
+                b_gpu = gpuarray.to_gpu(b)
+                dinfo()
                 c_gpu = cu.dot(a_gpu, b_gpu, 'N','T')
                 res = c_gpu.get()
-        elif b_f_order and not a_f_order:
-            if options.debug:
-                info("Transpose A (a_gpu)")
-            a = a.T
-            a_gpu = gpuarray.to_gpu(a)
-            dinfo()
-            with lock:
+            elif b_f_order and not a_f_order:
+                if options.debug:
+                    info("Transpose A (a_gpu)")
+                a = a.T
+                a_gpu = gpuarray.to_gpu(a)
+                dinfo()
                 c_gpu = cu.dot(a_gpu, b_gpu, 'T','N')
                 res = c_gpu.get()
-        else:
-            dinfo()
-            if a_gpu.flags.c_contiguous:
-                info("Double transpose - don't expect this to happen")
-                a_gpu = gpuarray.to_gpu(a.T)
-                b_gpu = gpuarray.to_gpu(b.T)
-                c_gpu = cu.dot(a_gpu, b_gpu, 'T','T')
             else:
-                if options.debug:
-                    info("No transpose")
-                with lock:
+                dinfo()
+                if a_gpu.flags.c_contiguous:
+                    raise Exception("Double transpose - don't expect this to happen")
+                    a_gpu = gpuarray.to_gpu(a.T)
+                    b_gpu = gpuarray.to_gpu(b.T)
+                    c_gpu = cu.dot(a_gpu, b_gpu, 'T','T')
+                else:
+                    if options.debug:
+                        info("No transpose")
                     c_gpu = cu.dot(a_gpu, b_gpu, 'N','N')
                     res = c_gpu.get()
     if options.debug:

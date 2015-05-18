@@ -102,7 +102,7 @@ def gwas(Y,G,K,restricted_max_likelihood=True,refit=False,verbose=True):
    q = mp.Queue()
    if threads.multi():
        p = mp.Pool(threads.numThreads, f_init, [q])
-   collect = [] # container for SNPs to be processed in one job
+   collect = [] # container for SNPs to be processed in one batch
 
    count = 0
    job = 0
@@ -141,8 +141,7 @@ def gwas(Y,G,K,restricted_max_likelihood=True,refit=False,verbose=True):
                   pass
                if jobs_running > cpu_num*2:  # sleep longer if many jobs
                   time.sleep(1.0)
-
-      collect.append(snp_id)
+      collect.append(snp_id) # add SNP to process in batch
 
    debug("count=%i running=%i collect=%i" % (count,jobs_running,len(collect)))
    if len(collect)>0:
