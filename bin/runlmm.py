@@ -35,10 +35,11 @@ from lmm import gn2_load_redis, gn2_load_redis_iter, calculate_kinship_new, run_
 from kinship import kinship, kinship_full
 import genotype
 import phenotype
-from standalone import uses
+from standalone import uses, set_logger
 import cuda
 import threads
 import lmmoptions
+import logging
 
 progress,mprint,debug,info,fatal = uses('progress','mprint','debug','info','fatal')
 
@@ -144,6 +145,9 @@ if options.noCUDA:
     cuda.useCUDA = False
     print "Disabling CUDA support"
 
+if options.debug:
+    set_logger(logging.DEBUG)
+    
 threads.setNumThreads(options.numThreads)
 
 lmmoptions.set(options)

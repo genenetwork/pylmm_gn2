@@ -14,8 +14,11 @@ import logging
 
 # logger = logging.getLogger(__name__)
 logger = logging.getLogger('lmm2')
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 np.set_printoptions(precision=3,suppress=True)
+
+def set_logger(level):
+    logging.basicConfig(level=level)
 
 progress_location = None
 progress_current  = None

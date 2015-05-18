@@ -119,7 +119,7 @@ def gwas(Y,G,K,restricted_max_likelihood=True,refit=False,verbose=True):
          else:
             p.apply_async(compute_snp,(job,n,collect,lmm2,reml))
             jobs_running += 1
-            info("jobs_running (+) %d" % jobs_running)
+            debug("jobs_running (+) %d" % jobs_running)
             collect = []
             while jobs_running >= cpu_num: # throttle maximum jobs
                try:
@@ -129,7 +129,7 @@ def gwas(Y,G,K,restricted_max_likelihood=True,refit=False,verbose=True):
                   progress("GWAS2",jobs_completed,snps/1000)
                   res.append((j,lst))
                   jobs_running -= 1
-                  info("jobs_running (-) %d" % jobs_running)
+                  debug("jobs_running (-) %d" % jobs_running)
                except Queue.Empty:
                   debug("Queue is empty count=%i running=%i completed=%i collect=%i" % (count,jobs_running,jobs_completed,len(collect)))
                   time.sleep(1.0)
@@ -151,7 +151,7 @@ def gwas(Y,G,K,restricted_max_likelihood=True,refit=False,verbose=True):
       j,lst = q.get(True,15) # time out
       debug("Job "+str(j)+" finished")
       jobs_running -= 1
-      info("jobs_running cleanup (-) %d" % jobs_running)
+      debug("jobs_running cleanup (-) %d" % jobs_running)
       jobs_completed += 1
       progress("GWAS2",jobs_completed,snps/1000)
       res.append((j,lst))
