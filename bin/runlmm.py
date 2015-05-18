@@ -144,8 +144,7 @@ if options.noCUDA:
     cuda.useCUDA = False
     print "Disabling CUDA support"
 
-if options.numThreads is not None:
-    threads.numThreads = options.numThreads
+threads.setNumThreads(options.numThreads)
 
 lmmoptions.set(options)
 print lmmoptions.get()

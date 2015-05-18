@@ -120,6 +120,7 @@ def gwas(Y,G,K,restricted_max_likelihood=True,refit=False,verbose=True):
             progress("GWAS2",jobs_completed,snps/1000)
             res.append((j,lst))
          else:
+            raise "BUG"
             p.apply_async(compute_snp,(job,n,collect,lmm2,reml))
             jobs_running += 1
             collect = []

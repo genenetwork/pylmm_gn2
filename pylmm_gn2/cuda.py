@@ -32,12 +32,12 @@ debug,info,mprint = uses('debug','info','mprint')
 import timeit
 
 def dot(x,y):
-    # debug("CUDA dot product")
 
     cu.init()
     options = lmmoptions.get()
 
     if options.debug:
+        debug("enter CUDA dot product")
         mprint("x",x)
         mprint("y",y)
         # First use numpy
@@ -90,12 +90,12 @@ def dot(x,y):
         if options.debug:
             mprint("a",a)
             mprint("b",b)
+            print "x c flag",x.flags.c_contiguous,"\ta_gpu c flag",a_gpu.flags.c_contiguous
+            print "x f flag",x.flags.f_contiguous,"\ta_gpu f flag",a_gpu.flags.f_contiguous,"\ta_f_order",a_f_order
+            print "y c flag",y.flags.c_contiguous,"\tb_gpu c flag",b_gpu.flags.c_contiguous
+            print "y f flag",y.flags.f_contiguous,"\tb_gpu f flag",b_gpu.flags.f_contiguous,"\tb_f_order",b_f_order
             print "a_gpu strides",a_gpu.strides
             print "b_gpu strides",b_gpu.strides
-            print "a_gpu c flag",a_gpu.flags.c_contiguous
-            print "b_gpu c flag",b_gpu.flags.c_contiguous
-            print "a_f_order",a_f_order
-            print "b_f_order",b_f_order
     # If strides are equal you can't tell the order. So we'll use numpy instead
     if a_gpu.strides[1] == a_gpu.strides[0] or b_gpu.strides[1] == b_gpu.strides[0]:
         return np.dot(x,y)
@@ -123,6 +123,7 @@ def dot(x,y):
             else:
                 info("No transpose")
                 c_gpu = cu.dot(a_gpu, b_gpu, 'N','N')
+            raise "This is weird"
         # c_gpu = cu.dot(a_gpu, b_gpu, GtransA, GtransB)
         res = c_gpu.get()
     if options.debug:

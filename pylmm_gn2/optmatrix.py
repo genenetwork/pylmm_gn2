@@ -50,6 +50,7 @@ def matrixMult(A,B):
 
    options = lmmoptions.get()
    if options.debug:
+       debug("enter matrixMult")
        mprint("A",A)
        mprint("B",B)
    if not initializedMatrix:
