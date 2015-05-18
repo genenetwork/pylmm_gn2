@@ -29,10 +29,13 @@ from standalone import uses
 import lmmoptions
 debug,info,mprint = uses('debug','info','mprint')
 
-import timeit
+import threading
+lock = threading.Lock()
+
 cu.init()
 
 def dot(x,y):
+    global lock
 
     options = lmmoptions.get()
 
@@ -102,6 +105,9 @@ def dot(x,y):
                 raise Exception("Flags out of order")
             if b_f_order and not b_gpu.flags.f_contiguous:
                 raise Exception("Flags out of order")
+    res = None
+    if lock.locked():
+        debug("Waiting for lock")
     # If strides are equal you can't tell the order. So we'll use numpy instead
     if a_gpu.strides[1] == a_gpu.strides[0] or b_gpu.strides[1] == b_gpu.strides[0]:
         if options.debug:
@@ -114,14 +120,18 @@ def dot(x,y):
             b = b.T
             b_gpu = gpuarray.to_gpu(b)
             dinfo()
-            c_gpu = cu.dot(a_gpu, b_gpu, 'N','T')
+            with lock:
+                c_gpu = cu.dot(a_gpu, b_gpu, 'N','T')
+                res = c_gpu.get()
         elif b_f_order and not a_f_order:
             if options.debug:
                 info("Transpose A (a_gpu)")
             a = a.T
             a_gpu = gpuarray.to_gpu(a)
             dinfo()
-            c_gpu = cu.dot(a_gpu, b_gpu, 'T','N')
+            with lock:
+                c_gpu = cu.dot(a_gpu, b_gpu, 'T','N')
+                res = c_gpu.get()
         else:
             dinfo()
             if a_gpu.flags.c_contiguous:
@@ -132,8 +142,9 @@ def dot(x,y):
             else:
                 if options.debug:
                     info("No transpose")
-                c_gpu = cu.dot(a_gpu, b_gpu, 'N','N')
-        res = c_gpu.get()
+                with lock:
+                    c_gpu = cu.dot(a_gpu, b_gpu, 'N','N')
+                    res = c_gpu.get()
     if options.debug:
         mprint("numpy.dot",npdot)
         res = np.ascontiguousarray(res)

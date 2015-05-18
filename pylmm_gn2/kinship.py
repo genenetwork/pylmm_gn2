@@ -119,7 +119,7 @@ def kinship(G,computeSize=1000):
         continue
 
       if threads.numThreads == 1:
-         # Single-core
+         info("Single-core")
          print(q)
          compute_matrixMult(job,W,q)
          j,x = q.get()

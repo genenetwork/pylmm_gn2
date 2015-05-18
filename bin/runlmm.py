@@ -164,7 +164,7 @@ def check_results(ps,ts):
         assert p2==0.062, "p2=%f" % p2
     if options.geno == 'data/test8000.geno':
         info("Validating results for "+options.geno)
-        assert round(sum(ps)) == 4070
+        assert round(sum(ps)) == 4070, round(sum(ps))
         assert len(ps) == 8000
     info("Run completed")
 

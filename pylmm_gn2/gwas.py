@@ -70,6 +70,10 @@ def gwas(Y,G,K,restricted_max_likelihood=True,refit=False,verbose=True):
    info("In gwas.gwas")
    # matrix_initialize()
    cpu_num = mp.cpu_count()
+   if threads.numThreads:
+       cpu_num = threads.numThreads
+       info("Using %d threads" % cpu_num)
+
    kfile2 = False
    reml = restricted_max_likelihood
 
@@ -98,7 +102,7 @@ def gwas(Y,G,K,restricted_max_likelihood=True,refit=False,verbose=True):
    q = mp.Queue()
    if threads.multi():
        p = mp.Pool(threads.numThreads, f_init, [q])
-   collect = []
+   collect = [] # container for SNPs to be processed in one job
 
    count = 0
    job = 0
@@ -122,36 +126,39 @@ def gwas(Y,G,K,restricted_max_likelihood=True,refit=False,verbose=True):
          else:
             p.apply_async(compute_snp,(job,n,collect,lmm2,reml))
             jobs_running += 1
+            info("jobs_running (+) %d" % jobs_running)
             collect = []
-            while jobs_running > cpu_num:
+            while jobs_running >= cpu_num: # throttle maximum jobs
                try:
-                  j,lst = q.get_nowait()
+                  j,lst = q.get(False,3)
                   debug("Job "+str(j)+" finished")
                   jobs_completed += 1
                   progress("GWAS2",jobs_completed,snps/1000)
                   res.append((j,lst))
                   jobs_running -= 1
+                  info("jobs_running (-) %d" % jobs_running)
                except Queue.Empty:
-                  time.sleep(0.1)
                   pass
-               if jobs_running > cpu_num*2:
+               if jobs_running > cpu_num*2:  # sleep longer if many jobs
                   time.sleep(1.0)
-               else:
-                  break
 
       collect.append(snp_id)
 
-   if threads.single() or count<1000 or len(collect)>0:
+   debug("count=%i running=%i collect=%i" % (count,jobs_running,len(collect)))
+   if len(collect)>0:
       job += 1
       debug("Collect final batch size %i job %i @%i: " % (len(collect), job, count))
-      compute_snp(job,n,collect,lmm2,reml,q)
+      if threads.single():
+          compute_snp(job,n,collect,lmm2,reml,q)
+      else:
+          p.apply_async(compute_snp,(job,n,collect,lmm2,reml))
+      jobs_running += 1
       collect = []
-      j,lst = q.get()
-      res.append((j,lst))
-   debug("count=%i running=%i collect=%i" % (count,jobs_running,len(collect)))
    for job in range(jobs_running):
       j,lst = q.get(True,15) # time out
       debug("Job "+str(j)+" finished")
+      jobs_running -= 1
+      info("jobs_running iii (-) %d" % jobs_running)
       jobs_completed += 1
       progress("GWAS2",jobs_completed,snps/1000)
       res.append((j,lst))
