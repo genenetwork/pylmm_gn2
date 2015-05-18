@@ -58,12 +58,14 @@ def matrixMult(A,B):
 
    if cuda.useCUDA:
        res = cuda.dot(A,B)
-       mprint("dot",res)
+       if options.debug:
+           mprint("cuda.dot",res)
        return res
 
    if useNumpy:
        res = np.dot(A,B)
-       mprint("dot",res)
+       if options.debug:
+           mprint("np.dot",res)
        return res
 
    # If the matrices are in Fortran order then the computations will be faster
