@@ -6,8 +6,8 @@ except:
   sys.stderr.write("INFO: no scipy.linalg.blas libs\n")
 
 try:
-  import pycuda.gpuarray as gpuarray
   import pycuda.autoinit
+  import pycuda.gpuarray as gpuarray
 except:
   sys.stderr.write("INFO: no pycuda libs\n")
 
@@ -32,7 +32,6 @@ debug,info,mprint = uses('debug','info','mprint')
 import threading
 cuda_lock = threading.Lock()
 
-cu.init()
 
 def dot(x,y):
     global cuda_lock
@@ -77,10 +76,21 @@ def dot(x,y):
             print "npdot.strides",npdot.strides
             # assert res.strides==npdot.strides
 
+    size = x.shape[0]*x.shape[1]+y.shape[0]*y.shape[1]
+    fpsize = 8
+    # If strides are equal you can't tell the order. So we'll use numpy instead
+    if x.strides[1] == x.strides[0] or y.strides[1] == y.strides[0] or size*fpsize<100000:
+        # debug("Usign numpy instead of CUDA")
+        return np.dot(x,y)
+
     # Now use GPU
     a = x
     b = y
+    if cuda_lock.locked():
+        debug("Waiting for cuda_lock")
     with cuda_lock:
+        debug("CUDA allocate size=%d x %d (%f GB)" % (size,fpsize,(float(size)*fpsize/1000000000.0)))
+        # cu.init()
         a_gpu = gpuarray.to_gpu(a)
         b_gpu = gpuarray.to_gpu(b)
         c_gpu = None
@@ -108,43 +118,35 @@ def dot(x,y):
                 raise Exception("Flags out of order")
 
     res = None
-    if cuda_lock.locked():
-        debug("Waiting for cuda_lock")
-    # If strides are equal you can't tell the order. So we'll use numpy instead
-    if a_gpu.strides[1] == a_gpu.strides[0] or b_gpu.strides[1] == b_gpu.strides[0]:
-        if options.debug:
-           info("Usign numpy instead of CUDA")
-        return np.dot(x,y)
-    else:
-        with cuda_lock:
-            if a_f_order and not b_f_order:
-                if options.debug:
-                    info("Transpose B (b_gpu)")
-                b = b.T
-                b_gpu = gpuarray.to_gpu(b)
-                dinfo()
-                c_gpu = cu.dot(a_gpu, b_gpu, 'N','T')
-                res = c_gpu.get()
-            elif b_f_order and not a_f_order:
-                if options.debug:
-                    info("Transpose A (a_gpu)")
-                a = a.T
-                a_gpu = gpuarray.to_gpu(a)
-                dinfo()
-                c_gpu = cu.dot(a_gpu, b_gpu, 'T','N')
-                res = c_gpu.get()
+    with cuda_lock:
+        if a_f_order and not b_f_order:
+            if options.debug:
+                info("Transpose B (b_gpu)")
+            b = b.T
+            b_gpu = gpuarray.to_gpu(b)
+            dinfo()
+            c_gpu = cu.dot(a_gpu, b_gpu, 'N','T')
+            res = c_gpu.get()
+        elif b_f_order and not a_f_order:
+            if options.debug:
+                info("Transpose A (a_gpu)")
+            a = a.T
+            a_gpu = gpuarray.to_gpu(a)
+            dinfo()
+            c_gpu = cu.dot(a_gpu, b_gpu, 'T','N')
+            res = c_gpu.get()
+        else:
+            dinfo()
+            if a_gpu.flags.c_contiguous:
+                raise Exception("Double transpose - don't expect this to happen")
+                a_gpu = gpuarray.to_gpu(a.T)
+                b_gpu = gpuarray.to_gpu(b.T)
+                c_gpu = cu.dot(a_gpu, b_gpu, 'T','T')
             else:
-                dinfo()
-                if a_gpu.flags.c_contiguous:
-                    raise Exception("Double transpose - don't expect this to happen")
-                    a_gpu = gpuarray.to_gpu(a.T)
-                    b_gpu = gpuarray.to_gpu(b.T)
-                    c_gpu = cu.dot(a_gpu, b_gpu, 'T','T')
-                else:
-                    if options.debug:
-                        info("No transpose")
-                    c_gpu = cu.dot(a_gpu, b_gpu, 'N','N')
-                    res = c_gpu.get()
+                if options.debug:
+                    info("No transpose")
+                c_gpu = cu.dot(a_gpu, b_gpu, 'N','N')
+                res = c_gpu.get()
     if options.debug:
         mprint("numpy.dot",npdot)
         res = np.ascontiguousarray(res)
@@ -159,7 +161,7 @@ def dot(x,y):
         print "npdot.strides",npdot.strides
         assert res.shape == npdot.shape
         assert res.strides == npdot.strides
-        debug("exit CUDA dot product - all tests pass")
+    debug("exit CUDA dot product - all tests pass")
     return res
     # return np.ascontiguousarray(res)
     # return np.asarray(res)

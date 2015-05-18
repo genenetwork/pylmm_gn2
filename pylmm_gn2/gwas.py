@@ -138,7 +138,8 @@ def gwas(Y,G,K,restricted_max_likelihood=True,refit=False,verbose=True):
                   jobs_running -= 1
                   info("jobs_running (-) %d" % jobs_running)
                except Queue.Empty:
-                  pass
+                  debug("Queue is empty count=%i running=%i completed=%i collect=%i" % (count,jobs_running,jobs_completed,len(collect)))
+                  time.sleep(1.0)
                if jobs_running > cpu_num*2:  # sleep longer if many jobs
                   time.sleep(1.0)
       collect.append(snp_id) # add SNP to process in batch
@@ -157,7 +158,7 @@ def gwas(Y,G,K,restricted_max_likelihood=True,refit=False,verbose=True):
       j,lst = q.get(True,15) # time out
       debug("Job "+str(j)+" finished")
       jobs_running -= 1
-      info("jobs_running iii (-) %d" % jobs_running)
+      info("jobs_running cleanup (-) %d" % jobs_running)
       jobs_completed += 1
       progress("GWAS2",jobs_completed,snps/1000)
       res.append((j,lst))
