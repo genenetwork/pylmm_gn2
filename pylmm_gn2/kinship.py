@@ -133,7 +133,7 @@ def kinship(G,computeSize=1000):
          # Do we have a result?
          while (len(results)-completed>cpu_num*2):
             time.sleep(0.1)
-            try: 
+            try:
                j,x = q.get_nowait()
                debug("Job "+str(j)+" finished")
                K_j = x
@@ -142,7 +142,7 @@ def kinship(G,computeSize=1000):
                progress("kinship",completed,iterations)
             except Queue.Empty:
                pass
-         
+
    if threads.multi():
       for job in range(len(results)-completed):
          j,x = q.get(True,15)
@@ -153,7 +153,7 @@ def kinship(G,computeSize=1000):
          progress("kinship",completed,iterations)
 
    K = K / float(snps)
-   return K      
+   return K
 
 def kvakve(K):
    """
