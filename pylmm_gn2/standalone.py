@@ -39,6 +39,9 @@ def progress(location, count, total):
     global progress_location
     global progress_prev_perc
 
+    if total==0:
+        total=1
+
     perc = round(count*100.0/total)
     if perc != progress_prev_perc and (location != progress_location or perc > 98 or perc > progress_prev_perc + 5):
         progress_func(location, count, total)

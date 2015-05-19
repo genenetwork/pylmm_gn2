@@ -201,6 +201,7 @@ elif cmd == 'redis_new':
     ps, ts = gn2_load_redis('testrun','other',k,Y,G,new_code=True)
     check_results(ps,ts)
 elif cmd == 'redis':
+    raise Exception("Obsoleted - all normalization actions are now internal to pylmm")
     # Emulating the redis setup of GN2
     G = g
     print "Original G",G.shape, "\n", G

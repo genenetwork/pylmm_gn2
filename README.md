@@ -19,7 +19,7 @@ and multi-core use are
 For CUDA dependencies are (in addition to a functional NVIDIA Tesla installation)
 
     pycuda
-    scikits.cuda
+    scikits.cuda (latest from github!)
 
 You may need to add something like
 
