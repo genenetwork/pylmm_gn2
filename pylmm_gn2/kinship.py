@@ -26,12 +26,26 @@ import multiprocessing as mp # Multiprocessing is part of the Python stdlib
 import Queue
 import time
 import threads
+import cuda
 
 from optmatrix import matrixMultT
 import standalone as handlers
 from standalone import uses, progress_set_func
 
 progress,debug,info,mprint = uses('progress','debug','info','mprint')
+
+def kinship_useCUDA(G):
+   return cuda.useCUDA
+
+def kinship_doCalcFull(G):
+   """
+   If the matrix is small enough, calculating in RAM is fastest
+   """
+   size = G.shape[0]*G.shape[1]*8
+   bool = size < 990000000
+   info("Kinship size %d (CUDA=%s)" % (size,bool))
+   return bool
+
 
 def kinship_full(G):
    """

@@ -29,13 +29,7 @@ from standalone import uses
 import lmmoptions
 debug,info,mprint = uses('debug','info','mprint')
 
-import threading
-cuda_lock = threading.Lock()
-
-
 def dot(x,y):
-    global cuda_lock
-
     options = lmmoptions.get()
 
     debug("enter CUDA dot product")
@@ -43,15 +37,13 @@ def dot(x,y):
     fpsize = 8
     # If strides are equal you can't tell the order. So we'll use numpy instead
     if x.strides[1] == x.strides[0] or y.strides[1] == y.strides[0] or size*fpsize<20000:
-        debug("Usign numpy instead of CUDA")
+        debug("Using numpy instead of CUDA")
         return np.dot(x,y)
 
     a = x
     b = y
     a_f_order = a.flags.f_contiguous
     b_f_order = b.flags.f_contiguous
-    if cuda_lock.locked():
-        debug("Waiting for cuda_lock")
     debug("CUDA allocate size=%d x %d (%f GB)" % (size,fpsize,(float(size)*fpsize/1000000000.0)))
 
     def dinfo():
@@ -75,8 +67,7 @@ def dot(x,y):
                 raise Exception("Flags out of order")
 
     res = None
-
-    with cuda_lock:
+    try:
         if a_f_order and not b_f_order:
             debug("Transpose B (b_gpu)")
             b = b.T
@@ -107,6 +98,10 @@ def dot(x,y):
                 b_gpu = gpuarray.to_gpu(b)
                 c_gpu = cu.dot(a_gpu, b_gpu, 'N','N')
                 res = c_gpu.get()
+    except:
+        debug("Falling back on using numpy instead of CUDA")
+        res = np.dot(x,y)
+
     if options.debug:
         mprint("numpy.dot",npdot)
         res = np.ascontiguousarray(res)

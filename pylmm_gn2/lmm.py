@@ -35,7 +35,7 @@ if not cwd in sys.path:
     sys.path.insert(1,cwd)
 
 # pylmm imports
-from kinship import kinship, kinship_full, kvakve
+from kinship import kinship_useCUDA, kinship_doCalcFull, kinship, kinship_full, kvakve
 import genotype
 import phenotype
 import gwas
@@ -377,17 +377,21 @@ def calculate_kinship_new(genotype_matrix):
     G = np.apply_along_axis( genotype.normalize, axis=1, arr=genotype_matrix)
     mprint("G",genotype_matrix)
     info("call calculate_kinship_new")
-    return kinship_full(G),G
-    # return kinship(G),G # G gets transposed, we'll turn this into an iterator (FIXME)
+    if kinship_useCUDA(G) or kinship_doCalcFull(G):
+        try:
+            return kinship_full(G),G
+        except:
+            pass # when out of memory try the iterator version
+    return kinship(G),G
 
-def calculate_kinship_iter(geno):
+def calculate_kinship_iter(genotype_matrix):
     """
     Call the new kinship calculation where genotype_matrix contains
     inds (columns) by snps (rows).
     """
-    assert type(genotype_matrix) is iter
+    assert type(genotype_matrix) is np.ndarray
     info("call genotype.normalize")
-    G = np.apply_along_axis( genotype.normalize, axis=0, arr=genotype_matrix)
+    G = np.apply_along_axis( genotype_matrix.normalize, axis=0, arr=genotype_matrix)
     info("call calculate_kinship_new")
     return kinship(G)
 

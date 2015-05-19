@@ -27,6 +27,7 @@ import numpy as np
 import input
 from lmm2 import LMM2
 import threads
+import cuda
 
 import multiprocessing as mp # Multiprocessing is part of the Python stdlib
 import Queue
@@ -34,6 +35,16 @@ import Queue
 from standalone import uses
 progress,mprint,debug,info,fatal = uses('progress','mprint','debug','info','fatal')
 
+def gwas_useCUDA(G):
+   """
+   If the matrix is small enough, calculating in RAM is fastest
+   """
+   if not cuda.useCUDA:
+     return False
+   size = G.shape[0]*G.shape[1]*8
+   bool = size > 990000000  
+   info("GWAS size %d (CUDA=%s)" % (size,bool))
+   return bool
 
 def formatResult(id,beta,betaSD,ts,ps):
    return "\t".join([str(x) for x in [id,beta,betaSD,ts,ps]]) + "\n"
@@ -65,7 +76,9 @@ def gwas(Y,G,K,restricted_max_likelihood=True,refit=False,verbose=True):
    cpu_num = mp.cpu_count()
    if threads.numThreads:
        cpu_num = threads.numThreads
-       info("Using %d threads" % cpu_num)
+   if gwas_useCUDA(G):
+       cpu_num = 1
+   info("Using %d threads" % cpu_num)
 
    kfile2 = False
    reml = restricted_max_likelihood
@@ -93,8 +106,8 @@ def gwas(Y,G,K,restricted_max_likelihood=True,refit=False,verbose=True):
    # Set up the pool
    # mp.set_start_method('spawn')
    q = mp.Queue()
-   if threads.multi():
-       p = mp.Pool(threads.numThreads, f_init, [q])
+   if cpu_num > 1:
+       p = mp.Pool(cpu_num, f_init, [q])
    collect = [] # container for SNPs to be processed in one batch
 
    count = 0
@@ -107,7 +120,7 @@ def gwas(Y,G,K,restricted_max_likelihood=True,refit=False,verbose=True):
       if count % 1000 == 0:
          job += 1
          info("Job %d At SNP %d" % (job,count))
-         if threads.single():
+         if cpu_num == 1:
             debug("Running on 1 THREAD")
             compute_snp(job,n,collect,lmm2,reml,q)
             collect = []
@@ -141,7 +154,7 @@ def gwas(Y,G,K,restricted_max_likelihood=True,refit=False,verbose=True):
    if len(collect)>0:
       job += 1
       debug("Collect final batch size %i job %i @%i: " % (len(collect), job, count))
-      if threads.single():
+      if cpu_num == 1:
           compute_snp(job,n,collect,lmm2,reml,q)
       else:
           p.apply_async(compute_snp,(job,n,collect,lmm2,reml))

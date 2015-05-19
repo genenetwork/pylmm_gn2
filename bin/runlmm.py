@@ -147,7 +147,7 @@ if options.noCUDA:
 
 if options.debug:
     set_logger(logging.DEBUG)
-    
+
 threads.setNumThreads(options.numThreads)
 
 lmmoptions.set(options)
