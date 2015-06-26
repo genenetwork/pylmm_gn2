@@ -39,3 +39,8 @@ force BLAS use the --blas switch.
 
 
 Pjotr Prins
+
+## License
+
+pylmm is offered under the GNU Affero GPL (https://www.gnu.org/licenses/why-affero-gpl.html).
+See also LICENSE.txt file that comes with the source.
