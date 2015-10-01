@@ -36,7 +36,7 @@ class Bench(object):
         print("\nTiming report\n")
         for name, time_taken in cls.entries.iteritems():
             percent = int(round((time_taken/total_time) * 100))
-            print("[{}%] {}: {}".format(percent, name, time_taken))
+            print("[{}%] {}: {} sec.".format(percent, name, time_taken))
         print()
         
     def reset(cls):
