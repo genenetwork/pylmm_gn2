@@ -55,12 +55,15 @@ python runlmm.py [options] command
     parse               : only parse input files
     redis, redis_new    : use Redis to call into GN2
     kinship             : calculate kinship matrix
+    rqtl                : R/qtl-style runner
 
   Examples:
 
     ./bin/runlmm.py --pheno data/small.pheno --geno data/small.geno run
     ./bin/runlmm.py --geno data/small_na.geno kinship --maf-normalization --test-kinship
     ./bin/runlmm.py --pheno data/small_na.pheno --geno data/small_na.geno redis_new
+    ./bin/runlmm.py --pheno data/small_na.pheno --geno data/small_na.geno redis_new
+    ./bin/runlmm.py --control data/rqtl/iron.yaml --pheno data/rqtl/iron_pheno.csv --geno data/rqtl/iron_geno.csv
 
   try --help for more information
 """
