@@ -23,7 +23,7 @@ try:
   cu.init()
 except:
   useCUDA=False
-  sys.stderr.write("INFO: CUDA not supported\n")
+  sys.stderr.write("INFO: CUDA not supported in this machine\n")
 
 from standalone import uses
 import lmmoptions

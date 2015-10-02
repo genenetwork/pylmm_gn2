@@ -1,13 +1,26 @@
-# Fast simple LMM resolver
+* Fast simple LMM resolver
 
-This LMM resolver is a simplified version of FaST-LMM. It is part of genenetwork.org.
+This LMM resolver is a version of FaST-LMM. It is part of
+http://genenetwork.org/.
 
-## Multi-core support
+** Multi-core support
 
-## GPU CUDA support
+Multi-core support is automatic.
+
+** GPU CUDA support
 
 CUDA support is automatic, provided a GPU is installed and
 dependencies are working.  pylmm tests for those dependencies and
 checks for RAM on the GPU. If these fail the program falls back to the
 multi-core edition.
 
+** Input formats
+
+This lmm-resolver supports a minimum of import formats. Conversion
+from one file format to another is a separate job and therefore a
+separate tool.  At this point a TSV format is supported and a newer
+CSV R/qtl format. It may well be the former will be dropped for the
+latter in the future. Examples can be found in the data directory.
+
+R/qtl comes with a control file containing a meta description of 
+alleles, covariates etc. For more see the rqtlreader.py file.

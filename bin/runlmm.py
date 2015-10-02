@@ -30,7 +30,6 @@ if cwd not in sys.path:
     sys.path.insert(1,cwd+'/pylmm_gn2')
 
 # pylmm modules
-import tsvreader
 from lmm import gn2_load_redis, gn2_load_redis_iter, calculate_kinship_new, run_gwas
 from kinship import kinship, kinship_full
 import genotype
@@ -67,7 +66,6 @@ python runlmm.py [options] command
 
   try --help for more information
 """
-
 
 parser = OptionParser(usage=usage)
 # parser.add_option("-f", "--file", dest="input file",
@@ -108,10 +106,13 @@ parser.add_option("--test",
 parser.add_option("--test-kinship",
                   action="store_true", dest="test_kinship", default=False,
                   help="Testing mode for Kinship calculation")
+parser.add_option("--control",dest="control",
+                  help="R/qtl control file")
 
 (options, args) = parser.parse_args()
 
 if len(args) != 1:
+    print "Error: Run command is missing!\n"
     print usage
     sys.exit(1)
 
@@ -122,16 +123,21 @@ k = None
 y = None
 g = None
 
+if cmd == 'rqtl':
+    import rqtlreader as reader
+else:
+    import tsvreader as reader
+
 if options.kinship:
-    k = tsvreader.kinship(options.kinship)
+    k = reader.kinship(options.kinship)
     print k.shape
 
 if options.pheno:
-    y = tsvreader.pheno(options.pheno)
+    y,ynames = reader.pheno(options.pheno)
     print y.shape
 
 if options.geno and cmd != 'iterator':
-    g = tsvreader.geno(options.geno)
+    g = reader.geno(options.geno)
     print g.shape
 
 if options.useBLAS:
@@ -185,10 +191,17 @@ if cmd == 'run':
     m = g.shape[1]
     ps, ts = run_gwas('other',n,m,k,y,g)  # <--- pass in geno by SNP
     check_results(ps,ts)
+elif cmd == 'rqtl':
+    if options.remove_missing_phenotypes:
+        raise Exception('Can not use --remove-missing-phenotypes with R/qtl LMM2')
+    n = len(y)
+    m = g.shape[1]
+    ps, ts = run_gwas('other',n,m,k,y,g)  # <--- pass in geno by SNP
+    check_results(ps,ts)
 elif cmd == 'iterator':
     if options.remove_missing_phenotypes:
         raise Exception('Can not use --remove-missing-phenotypes with LMM2')
-    geno_iterator =  tsvreader.geno_iter(options.geno)
+    geno_iterator =  reader.geno_iter(options.geno)
     ps, ts = gn2_load_redis_iter('testrun_iter','other',k,y,geno_iterator)
     check_results(ps,ts)
 elif cmd == 'redis_new':

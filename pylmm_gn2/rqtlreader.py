@@ -1,4 +1,4 @@
-# Standard file readers
+# R/qtl file readers
 #
 # Copyright (C) 2015  Pjotr Prins (pjotr.prins@thebird.nl)
 #
@@ -8,7 +8,15 @@
 import sys
 import os
 import numpy as np
+import yaml
 import csv
+import re
+
+def control(fn):
+    with open("test", "r") as f:
+       ctrl = yaml.load(f)
+       print ctrl
+       return ctrl
 
 def kinship(fn):
     K1 = []
@@ -29,16 +37,15 @@ def pheno(fn):
     ynames = None
     print fn
     with open(fn,'r') as tsvin:
-        assert(tsvin.readline().strip() == "# Phenotype format version 1.0")
-        tsvin.readline()
-        tsvin.readline()
-        tsv = csv.reader(tsvin, delimiter='\t')
+        tsv = csv.reader(tsvin)
         ynames = tsv.next()[1:]
+        p = re.compile('\.')
+        for n in ynames:
+            assert not p.match(n), "Phenotype header %s appear to contain number" % n
         for row in tsv:
             ns = np.genfromtxt(row[1:])
             Y1.append(ns) # <--- slow
     Y = np.array(Y1)
-    print ynames
     return Y,ynames
 
 def geno(fn):
