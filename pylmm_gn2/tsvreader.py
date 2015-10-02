@@ -41,8 +41,13 @@ def pheno(fn):
     print ynames
     return Y,ynames
 
-def geno(fn):
+def geno(fn, ctrl=None):
+    """
+    At this point the genotypes are hard-coded. We'll move to R/qtl style
+    control in the future
+    """
     G1 = []
+    gnames = None
     hab_mapper = {'A':0,'H':1,'B':2,'-':3}
     pylmm_mapper = [ 0.0, 0.5, 1.0, float('nan') ]
 
@@ -53,8 +58,9 @@ def geno(fn):
         tsvin.readline()
         tsvin.readline()
         tsvin.readline()
-        tsvin.readline()
         tsv = csv.reader(tsvin, delimiter='\t')
+        gnames = tsv.next()[1:]
+        print gnames
         for row in tsv:
             # print(row)
             id = row[0]
@@ -65,9 +71,9 @@ def geno(fn):
             # ns = np.genfromtxt(row[1:])
             G1.append(gs2) # <--- slow
     G = np.array(G1)
-    return G
+    return G,gnames
 
-def geno(fn):
+def oldgeno(fn):
     G1 = []
     for id,values in geno_iter(fn):
         G1.append(values) # <--- slow

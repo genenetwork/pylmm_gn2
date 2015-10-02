@@ -13,9 +13,8 @@ import csv
 import re
 
 def control(fn):
-    with open("test", "r") as f:
+    with open(fn, "r") as f:
        ctrl = yaml.load(f)
-       print ctrl
        return ctrl
 
 def kinship(fn):
@@ -48,51 +47,52 @@ def pheno(fn):
     Y = np.array(Y1)
     return Y,ynames
 
-def geno(fn):
+def geno(fn, ctrl):
     G1 = []
-    hab_mapper = {'A':0,'H':1,'B':2,'-':3}
-    pylmm_mapper = [ 0.0, 0.5, 1.0, float('nan') ]
-
+    gnames = None
+    # for pylmm convert 'genotypes': {'A': 1, 'H': 2, 'B': 3}, 'na.strings': ['-', 'NA'] to
+    #  [ 0.0, 0.5, 1.0, NaN ]
+    hab_mapper = ctrl['genotypes']
+    print hab_mapper
+    idx = len(hab_mapper)
+    assert(idx == 3), hab_mapper  # this is what we expect now
+    # Note R/qtl hab_mapper is 1 indexed
+    pylmm_mapper = [ None, 0.0, 0.5, 1.0 ]
+    for s in ctrl['na.strings']:
+        idx += 1
+        hab_mapper[s] = idx
+        pylmm_mapper.append(float('nan'))
+    print hab_mapper
+    print pylmm_mapper
     print fn
     with open(fn,'r') as tsvin:
-        line = tsvin.readline().strip()
-        assert line == "# Genotype format version 1.0", line
-        tsvin.readline()
-        tsvin.readline()
-        tsvin.readline()
-        tsvin.readline()
-        tsv = csv.reader(tsvin, delimiter='\t')
+        tsv = csv.reader(tsvin)
+        gnames = tsv.next()[1:]
+        print gnames
         for row in tsv:
             # print(row)
             id = row[0]
-            gs = list(row[1])
+            gs = row[1:]
             # print id,gs
             gs2 = [pylmm_mapper[hab_mapper[g]] for g in gs]
             # print id,gs2
             # ns = np.genfromtxt(row[1:])
             G1.append(gs2) # <--- slow
     G = np.array(G1)
-    return G
-
-def geno(fn):
-    G1 = []
-    for id,values in geno_iter(fn):
-        G1.append(values) # <--- slow
-    G = np.array(G1)
-    return G
+    return G,gnames
 
 def geno_callback(fn,func):
     hab_mapper = {'A':0,'H':1,'B':2,'-':3}
     pylmm_mapper = [ 0.0, 0.5, 1.0, float('nan') ]
 
     print fn
-    with open(fn,'r') as tsvin:
-        assert(tsvin.readline().strip() == "# Genotype format version 1.0")
-        tsvin.readline()
-        tsvin.readline()
-        tsvin.readline()
-        tsvin.readline()
-        tsv = csv.reader(tsvin, delimiter='\t')
+    with open(fn,'r') as csvin:
+        assert(csvin.readline().strip() == "# Genotype format version 1.0")
+        csvin.readline()
+        csvin.readline()
+        csvin.readline()
+        csvin.readline()
+        tsv = csv.reader(csvin, delimiter='\t')
         for row in tsv:
             id = row[0]
             gs = list(row[1])
@@ -107,13 +107,13 @@ def geno_iter(fn):
     pylmm_mapper = [ 0.0, 0.5, 1.0, float('nan') ]
 
     print fn
-    with open(fn,'r') as tsvin:
-        assert(tsvin.readline().strip() == "# Genotype format version 1.0")
-        tsvin.readline()
-        tsvin.readline()
-        tsvin.readline()
-        tsvin.readline()
-        tsv = csv.reader(tsvin, delimiter='\t')
+    with open(fn,'r') as csvin:
+        assert(csvin.readline().strip() == "# Genotype format version 1.0")
+        csvin.readline()
+        csvin.readline()
+        csvin.readline()
+        csvin.readline()
+        tsv = csv.reader(csvin, delimiter='\t')
         for row in tsv:
             id = row[0]
             gs = list(row[1])

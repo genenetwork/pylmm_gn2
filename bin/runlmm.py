@@ -119,6 +119,7 @@ if len(args) != 1:
 cmd = args[0]
 print "Command: ",cmd
 
+ctrl = None  # R/qtl control structure
 k = None
 y = None
 g = None
@@ -127,6 +128,10 @@ if cmd == 'rqtl':
     import rqtlreader as reader
 else:
     import tsvreader as reader
+
+if options.control:
+    ctrl = reader.control(options.control)
+    print ctrl
 
 if options.kinship:
     k = reader.kinship(options.kinship)
@@ -137,7 +142,7 @@ if options.pheno:
     print y.shape
 
 if options.geno and cmd != 'iterator':
-    g = reader.geno(options.geno)
+    g,gnames = reader.geno(options.geno, ctrl)
     print g.shape
 
 if options.useBLAS:
