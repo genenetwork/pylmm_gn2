@@ -21,6 +21,7 @@
 import sys
 import os
 import numpy as np
+from numpy.linalg import eig
 from scipy import linalg
 import multiprocessing as mp # Multiprocessing is part of the Python stdlib
 import Queue
@@ -165,11 +166,14 @@ def kinship(G,computeSize=1000):
 
 def kvakve(K):
    """
+
    Obtain eigendecomposition for K and return Kva,Kve where Kva is cleaned
    of small values < 1e-6 (notably smaller than zero)
    """
    info("Obtaining eigendecomposition for %dx%d matrix" % (K.shape[0],K.shape[1]) )
    print(K)
+   assert (K.T == K).all() # raise "K is not symmetric"
+   # Kva,Kve = linalg.eig(K)
    Kva,Kve = linalg.eigh(K)
    mprint("Kva",Kva)
    mprint("Kve",Kve)
