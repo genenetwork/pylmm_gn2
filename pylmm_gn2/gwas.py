@@ -33,7 +33,7 @@ import multiprocessing as mp # Multiprocessing is part of the Python stdlib
 import Queue
 
 from standalone import uses
-progress,mprint,debug,info,fatal = uses('progress','mprint','debug','info','fatal')
+progress,mprint,debug,info,warning,fatal = uses('progress','mprint','debug','info','warning','fatal')
 
 def gwas_useCUDA(G):
    """
@@ -89,8 +89,8 @@ def gwas(Y,G,K,restricted_max_likelihood=True,refit=False,verbose=True):
    m = G.shape[0] # snps
    snps = m
    info("%s SNPs",snps)
-   if snps>=inds:
-      warn("snps should be larger than inds (snps=%d,inds=%d)" % (snps,inds))
+   if snps<inds:
+      warning("snps should be larger than inds (snps=%d,inds=%d)" % (snps,inds))
 
    # CREATE LMM object for association
    # if not kfile2:  L = LMM(Y,K,Kva,Kve,X0,verbose=verbose)
