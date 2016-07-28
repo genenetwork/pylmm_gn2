@@ -805,7 +805,16 @@ def run_gwas(species,n,m,k,y,geno,cov=None,reml=True,refit=False,inputfn=None,ne
     Invoke pylmm using genotype as a matrix or as a (SNP) iterator.
     """
     info("run_gwas")
-    print('pheno', y)
+    print('pheno', y.size, y[0:5])
+    print(np.shape(geno))
+    assert np.size(geno[0]) == y.size
+    assert y.size == n
+    if k != None:
+        print(np.size(k[0]))
+    else:
+        print("No kinship matrix passed in!")
+    assert np.shape(geno)[1] == m
+    # sys.exit(1)
 
     if species == "human" :
         print('kinship', k )
@@ -982,4 +991,3 @@ def gn2_main():
 if __name__ == '__main__':
     print("WARNING: Calling pylmm from lmm.py will become OBSOLETE, use runlmm.py instead!")
     gn2_main()
-

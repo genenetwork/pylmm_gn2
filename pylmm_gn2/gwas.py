@@ -42,7 +42,7 @@ def gwas_useCUDA(G):
    if not cuda.useCUDA:
      return False
    size = G.shape[0]*G.shape[1]*8
-   bool = size > 990000000  
+   bool = size > 990000000
    info("GWAS size %d (CUDA=%s)" % (size,bool))
    return bool
 
@@ -89,7 +89,8 @@ def gwas(Y,G,K,restricted_max_likelihood=True,refit=False,verbose=True):
    m = G.shape[0] # snps
    snps = m
    info("%s SNPs",snps)
-   assert snps>=inds, "snps should be larger than inds (snps=%d,inds=%d)" % (snps,inds)
+   if snps>=inds:
+      warn("snps should be larger than inds (snps=%d,inds=%d)" % (snps,inds))
 
    # CREATE LMM object for association
    # if not kfile2:  L = LMM(Y,K,Kva,Kve,X0,verbose=verbose)

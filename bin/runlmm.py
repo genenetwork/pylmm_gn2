@@ -4,7 +4,7 @@
 # switches. It acts as a multiplexer where all the invocation complexity
 # is kept outside the main LMM routines.
 #
-# Copyright (C) 2015  Pjotr Prins (pjotr.prins@thebird.nl)
+# Copyright (C) 2015,2016  Pjotr Prins (pjotr.prins@thebird.nl)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -62,7 +62,8 @@ python runlmm.py [options] command
     ./bin/runlmm.py --geno data/small_na.geno kinship --maf-normalization --test-kinship
     ./bin/runlmm.py --pheno data/small_na.pheno --geno data/small_na.geno redis_new
     ./bin/runlmm.py --pheno data/small_na.pheno --geno data/small_na.geno redis_new
-    ./bin/runlmm.py --control data/rqtl/iron.yaml --pheno data/rqtl/iron_pheno.csv --geno data/rqtl/iron_geno.csv
+    ./bin/runlmm.py --control data/rqtl/iron.yaml --pheno data/rqtl/iron_pheno.csv --geno data/rqtl/iron_geno.csv rqtl
+    ./bin/runlmm.py --control data/rqtl/iron.json rqtl (NYI)
 
   try --help for more information
 """
@@ -198,7 +199,7 @@ if cmd == 'run':
     check_results(ps,ts)
 elif cmd == 'rqtl':
     if options.remove_missing_phenotypes:
-        raise Exception('Can not use --remove-missing-phenotypes with R/qtl LMM2')
+        raise Exception('Can not use --remove-missing-phenotypes with R/qtl2 LMM2')
     n = len(y)
     m = g.shape[1]
     ps, ts = run_gwas('other',n,m,k,y,g)  # <--- pass in geno by SNP

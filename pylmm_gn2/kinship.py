@@ -106,7 +106,8 @@ def kinship(G,computeSize=1000):
    m = G.shape[0] # snps
    snps = m
    info("%i SNPs" % (m))
-   assert snps>=inds, "snps should be larger than inds (%i snps, %i inds)" % (snps,inds)
+   if snps>=inds:
+      print "WARNING: less snps than inds (%i snps, %i inds)" % (snps,inds)
 
    q = mp.Queue()
    if threads.multi():
@@ -176,7 +177,3 @@ def kvakve(K):
       info("Cleaning %d eigen values (Kva<0)" % (sum(Kva < 0)))
       Kva[Kva < 1e-6] = 1e-6
    return Kva,Kve
-
-
-
-
