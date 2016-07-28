@@ -809,10 +809,11 @@ def run_gwas(species,n,m,k,y,geno,cov=None,reml=True,refit=False,inputfn=None,ne
     print(np.shape(geno))
     assert np.size(geno[0]) == y.size
     assert y.size == n
-    if k != None:
+    if k:
         print(np.size(k[0]))
     else:
         print("No kinship matrix passed in!")
+    print(m,np.shape(geno))
     assert np.shape(geno)[1] == m
     # sys.exit(1)
 

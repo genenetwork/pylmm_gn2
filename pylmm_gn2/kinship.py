@@ -169,6 +169,7 @@ def kvakve(K):
    of small values < 1e-6 (notably smaller than zero)
    """
    info("Obtaining eigendecomposition for %dx%d matrix" % (K.shape[0],K.shape[1]) )
+   print(K)
    Kva,Kve = linalg.eigh(K)
    mprint("Kva",Kva)
    mprint("Kve",Kve)
