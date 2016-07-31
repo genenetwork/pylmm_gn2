@@ -174,7 +174,7 @@ def kvakve(K):
    print(K)
    assert (K.T == K).all() # raise "K is not symmetric"
    # Kva,Kve = linalg.eig(K)
-   Kva,Kve = linalg.eigh(K)
+   Kva,Kve = linalg.eigh(K) # check https://github.com/xianyi/OpenBLAS/issues/703
    mprint("Kva",Kva)
    mprint("Kve",Kve)
 
