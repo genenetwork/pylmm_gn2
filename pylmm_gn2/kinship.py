@@ -173,8 +173,7 @@ def kvakve(K):
    info("Obtaining eigendecomposition for %dx%d matrix" % (K.shape[0],K.shape[1]) )
    print(K)
    assert (K.T == K).all() # raise "K is not symmetric"
-   # Kva,Kve = linalg.eig(K)
-   Kva,Kve = linalg.eigh(K) # check https://github.com/xianyi/OpenBLAS/issues/703
+   Kva,Kve = linalg.eigh(K)
    mprint("Kva",Kva)
    mprint("Kve",Kve)
 
