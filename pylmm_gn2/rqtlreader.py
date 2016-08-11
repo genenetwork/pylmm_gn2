@@ -70,7 +70,13 @@ def geno(fn, ctrl):
     gnames = None
     # for pylmm convert 'genotypes': {'A': 1, 'H': 2, 'B': 3}, 'na.strings': ['-', 'NA'] to
     #  [ 0.0, 0.5, 1.0, NaN ]
-    hab_mapper = ctrl['genotypes']
+    if 'na.strings' not in ctrl:
+        ctrl['na.strings'] = ['-', 'NA']
+    # hab_mapper = ctrl['genotypes']
+    hab_mapper = {}
+    for k in ctrl['genotypes']:
+        hab_mapper[k] = int(ctrl['genotypes'][k])
+
     print hab_mapper
     idx = len(hab_mapper)
     assert(idx == 3), hab_mapper  # this is what we expect now
@@ -80,8 +86,8 @@ def geno(fn, ctrl):
         idx += 1
         hab_mapper[s] = idx
         pylmm_mapper.append(float('nan'))
-    print hab_mapper
-    print pylmm_mapper
+    print 'hab_mapper', hab_mapper
+    print 'pylmm_mapper', pylmm_mapper
     print fn
     with open(fn,'r') as tsvin:
         tsv = csv.reader(tsvin)
@@ -92,6 +98,7 @@ def geno(fn, ctrl):
             id = row[0]
             gs = row[1:]
             # print id,gs
+            # Convert all items to genotype values
             gs2 = [pylmm_mapper[hab_mapper[g]] for g in gs]
             # print id,gs2
             # ns = np.genfromtxt(row[1:])
