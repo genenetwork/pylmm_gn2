@@ -807,7 +807,7 @@ def run_gwas(species,n,m,k,y,geno,cov=None,reml=True,refit=False,inputfn=None,ne
     info("run_gwas")
     print('pheno', y.size, y[0:5])
     print(np.shape(geno))
-    assert np.size(geno[0]) == y.size
+    assert np.size(geno[0]) == y.size, [np.size(geno[0]), y.size]
     assert y.size == n
     if k:
         print(np.size(k[0]))

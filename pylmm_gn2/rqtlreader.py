@@ -104,6 +104,8 @@ def geno(fn, ctrl):
             # ns = np.genfromtxt(row[1:])
             G1.append(gs2) # <--- slow
     G = np.array(G1)
+    if 'geno_transposed' in ctrl and ctrl['geno_transposed']:
+      return G,gnames
     return G.T,gnames
 
 def geno_callback(fn,func):
