@@ -61,9 +61,11 @@ python runlmm.py [options] command
     ./bin/runlmm.py --pheno data/small.pheno --geno data/small.geno run
     ./bin/runlmm.py --geno data/small_na.geno kinship --maf-normalization --test-kinship
     ./bin/runlmm.py --pheno data/small_na.pheno --geno data/small_na.geno redis_new
-    ./bin/runlmm.py --pheno data/small_na.pheno --geno data/small_na.geno redis_new
+    ./bin/runlmm.py --geno=../test_gn_pylmm/data/test8000.geno --pheno=../test_gn_pylmm/data/test8000.pheno run
+
     ./bin/runlmm.py --control data/rqtl/iron.yaml --pheno data/rqtl/iron_pheno.csv --geno data/rqtl/iron_geno.csv rqtl
     ./bin/runlmm.py --control data/rqtl/iron.json rqtl (NYI)
+    ./bin/runlmm.py --control data/rqtl/recla.json --pheno data/rqtl/recla_pheno.csv --geno data/rqtl/recla_geno.csv rqtl --pheno-column=1
 
   try --help for more information
 """
@@ -75,6 +77,9 @@ parser.add_option("--kinship",dest="kinship",
                   help="Kinship file format 1.0")
 parser.add_option("--pheno",dest="pheno",
                   help="Phenotype file format 1.0")
+parser.add_option("--pheno-column", default=0,
+                  type="int", dest="pheno_column",
+                  help="Run phenotype in column (default 0)")
 parser.add_option("--geno",dest="geno",
                   help="Genotype file format 1.0")
 parser.add_option("--maf-normalization",
@@ -139,7 +144,7 @@ if options.kinship:
     print k.shape
 
 if options.pheno:
-    y,ynames = reader.pheno(options.pheno)
+    y,ynames = reader.pheno(options.pheno,options.pheno_column)
     print y.shape
 
 if options.geno and cmd != 'iterator':

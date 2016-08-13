@@ -34,7 +34,7 @@ def kinship(fn):
     K = np.array(K1)
     return K
 
-def pheno(fn):
+def pheno(fn,p_column = 0):
     """
     Fetch the Rqtl2 phenotypes and return matrix
 
@@ -58,7 +58,7 @@ def pheno(fn):
             assert not p.match(n), "Phenotype header %s appears to contain number" % n
         for row in tsv:
             ns = np.genfromtxt(row[1:])
-            Y1.append(ns[0]) # <--- slow
+            Y1.append(ns[p_column]) # <--- slow
     Y = np.array(Y1)
     return Y,ynames
 

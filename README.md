@@ -42,7 +42,7 @@ force BLAS use the --blas switch. Examples
 
     ./bin/runlmm.py --help
 
-    ./bin/runlmm.py --control data/rqtl/iron.yaml --pheno data/rqtl/iron_pheno.csv --geno data/rqtl/iron_geno.csv rqtl
+    ./bin/runlmm.py --control data/rqtl/iron.yaml --pheno data/rqtl/iron_pheno.csv --geno data/rqtl/iron_geno.csv rqtl --pheno-column=1
 
     env PYTHONPATH=./pylmm_gn2/:$PYTHONPATH python ./bin/runlmm.py \
       --geno=../test_gn_pylmm/data/test8000.geno \
