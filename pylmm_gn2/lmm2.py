@@ -278,8 +278,9 @@ class LMM2:
          LL_REML_part = q*np.log(2.0*np.pi*sigma) + np.log(det(matrixMultT(X.T))) - np.log(det(XX))
          LL = LL + 0.5*LL_REML_part
 
-      LL = LL.sum()
-      return LL,beta,sigma,XX_i
+      LLsum = LL.sum()
+      # info(["beta=",beta[0][0]," sigma=",sigma[0][0]," LL=",LLsum])
+      return LLsum,beta,sigma,XX_i
 
    def getMax(self,H, X=None,REML=False):
 
@@ -337,6 +338,7 @@ class LMM2:
       self.optBeta = beta
       self.optSigma = sigma.sum()
 
+      # debug(["hmax",hmax,"beta",beta,"sigma",sigma,"LL",L])
       return hmax,beta,sigma,L
 
    def association(self,X,h=None,stack=True,REML=True,returnBeta=False):
@@ -366,6 +368,7 @@ class LMM2:
       q  = len(beta)
       ts,ps = self.tstat(beta[q-1],betaVAR[q-1,q-1],sigma,q)
 
+      debug("ts=%0.3f, ps=%0.3f, heritability=%0.3f, sigma=%0.3f, LL=%0.5f" % (ts,ps,h,sigma,L))
       if returnBeta: return ts,ps,beta[q-1].sum(),betaVAR[q-1,q-1].sum()*sigma
       return ts,ps
 
@@ -419,4 +422,3 @@ class LMM2:
       vx = ((self.H - mn)**2 * p).sum()
 
       return mn,vx
-

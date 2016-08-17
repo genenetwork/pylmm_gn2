@@ -99,8 +99,8 @@ def gwas(Y,G,K,restricted_max_likelihood=True,refit=False,verbose=True):
    lmm2 = LMM2(Y,K) # ,Kva,Kve,X0,verbose=verbose)
    if not refit:
       info("Computing fit for null model")
-      lmm2.fit()  # follow GN model in run_other
-      info("heritability=%0.3f, sigma=%0.3f" % (lmm2.optH,lmm2.optSigma))
+      fit_hmax,fit_beta,fit_sigma,fit_LL = lmm2.fit()  # follow GN model in run_other
+      info("heritability=%0.3f, sigma=%0.3f, LL=%0.5f" % (lmm2.optH,lmm2.optSigma, fit_LL))
 
    res = []
 
