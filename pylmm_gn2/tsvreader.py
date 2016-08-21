@@ -24,7 +24,7 @@ def kinship(fn):
     K = np.array(K1)
     return K
 
-def pheno(fn):
+def pheno(fn, column = 0): # FIXME: column not used
     Y1 = []
     ynames = None
     print fn
@@ -96,7 +96,7 @@ def geno_callback(fn,func):
             id = row[0]
             gs = list(row[1])
             gs2 = [pylmm_mapper[hab_mapper[g]] for g in gs]
-            func(id,gs2) 
+            func(id,gs2)
 
 def geno_iter(fn):
     """
@@ -117,4 +117,4 @@ def geno_iter(fn):
             id = row[0]
             gs = list(row[1])
             gs2 = [pylmm_mapper[hab_mapper[g]] for g in gs]
-            yield (id,gs2) 
+            yield (id,gs2)
