@@ -50,10 +50,22 @@ def pheno(fn,p_column = 0):
     Y1 = []
     ynames = None
     print fn
+    re1 = re.compile(r'.+\.json$')
+    if re1.match(fn):
+        # ---- JSON format (GN2 style)
+        ynames = []
+        with open(fn, "r") as f:
+            gn2_pheno = yaml.load(f)
+        for strain in gn2_pheno:
+            print strain
+            Y1.append(strain[2])
+            ynames.append(strain[1])
+        return np.array(Y1),ynames
     with open(fn,'r') as tsvin:
+        # ---- TSV format
         tsv = csv.reader(tsvin)
         ynames = tsv.next()[1:]
-        p = re.compile('\.')
+        p = re.compile(r'.+\.')
         for n in ynames:
             assert not p.match(n), "Phenotype header %s appears to contain number" % n
         for row in tsv:
