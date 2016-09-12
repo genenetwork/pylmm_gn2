@@ -195,6 +195,20 @@ threads.setNumThreads(options.numThreads)
 lmmoptions.set(options)
 print lmmoptions.get()
 
+# If there are less phenotypes than strains, reduce the genotype matrix
+if np.size(g[0]) != y.size:
+    print "Reduce geno matrix to match phenotype strains"
+    print(gnames)
+    gidx = []
+    for ind in ynames:
+        gidx.append(gnames.index(ind))
+    print gidx
+    g2 = g.T[(gidx)].T
+    print g.shape,' now ',g2.shape
+    g = g2
+
+# All parameters set, now run the LMM
+
 if y is not None:
     n = y.shape[0]
 
