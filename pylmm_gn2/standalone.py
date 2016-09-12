@@ -26,7 +26,7 @@ progress_prev_perc     = None
 
 def progress_default_func(location,count,total):
     global progress_current
-    value = round(count*100.0/total)
+    value = round((count-1)*100.0/total)
     progress_current = value
 
 progress_func = progress_default_func
@@ -42,7 +42,7 @@ def progress(location, count, total):
     if total==0:
         total=1
 
-    perc = round(count*100.0/total)
+    perc = round((count-1)*100.0/total)
     if perc != progress_prev_perc and (location != progress_location or perc > 98 or perc > progress_prev_perc + 5):
         progress_func(location, count, total)
         logger.info("Progress: %s %d%%" % (location,perc))

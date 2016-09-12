@@ -204,7 +204,7 @@ if np.size(g[0]) != y.size:
         gidx.append(gnames.index(ind))
     print gidx
     g2 = g.T[(gidx)].T
-    print g.shape,' now ',g2.shape
+    print 'geno matrix ',g.shape,' reshaped to ',g2.shape
     g = g2
 
 # All parameters set, now run the LMM

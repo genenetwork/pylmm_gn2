@@ -853,8 +853,8 @@ def gwas_with_redis(key,species,new_code=True):
         """
         This is the single method that updates Redis for percentage complete!
         """
-        tempdata.store("percent_complete",round(i*100.0/total))
-        debug("Updating REDIS percent_complete=%d" % (round(i*100.0/total)))
+        tempdata.store("percent_complete",round((i-1)*100.0/total))
+        debug("Updating REDIS percent_complete=%d" % (round((i-1)*100.0/total)))
     progress_set_func(update_tempdata)
 
     def narray(t):
