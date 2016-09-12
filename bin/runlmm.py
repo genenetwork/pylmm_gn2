@@ -63,9 +63,12 @@ python runlmm.py [options] command
     ./bin/runlmm.py --pheno data/small_na.pheno --geno data/small_na.geno redis_new
     ./bin/runlmm.py --geno=../test_gn_pylmm/data/test8000.geno --pheno=../test_gn_pylmm/data/test8000.pheno run
 
+  R/qtl/genenetwork examples:
+
     ./bin/runlmm.py --control data/rqtl/iron.yaml --pheno data/rqtl/iron_pheno.csv --geno data/rqtl/iron_geno.csv rqtl
     ./bin/runlmm.py --control data/rqtl/iron.json rqtl (NYI)
     ./bin/runlmm.py --control data/rqtl/recla.json --pheno data/rqtl/recla_pheno.csv --geno data/rqtl/recla_geno.csv rqtl --pheno-column=1
+    ./bin/runlmm.py --control data/genenetwork/BXD.json --pheno data/genenetwork/104617_at.json --geno data/genenetwork/BXD.csv rqtl
 
   try --help for more information
 """
