@@ -125,6 +125,28 @@ if len(args) != 1:
 cmd = args[0]
 print "Command: ",cmd
 
+def check_results(ps,ts):
+    print np.array(ps)
+    print len(ps),sum(ps)
+    p1 = round(ps[0],4)
+    p2 = round(ps[-1],4)
+    if options.geno == 'data/small.geno':
+        info("Validating results for "+options.geno)
+        assert p1==0.7387, "p1=%f" % p1
+        assert p2==0.7387, "p2=%f" % p2
+    if options.geno == 'data/small_na.geno':
+        info("Validating results for "+options.geno)
+        assert p1==0.062, "p1=%f" % p1
+        assert p2==0.062, "p2=%f" % p2
+    if options.geno == 'data/test8000.geno':
+        info("Validating results for "+options.geno)
+        assert round(sum(ps)) == 4070, round(sum(ps))
+        assert len(ps) == 8000
+    info("Run completed")
+
+
+# Main routine
+
 ctrl = None  # R/qtl control structure
 k = None
 y = None
@@ -172,25 +194,6 @@ threads.setNumThreads(options.numThreads)
 
 lmmoptions.set(options)
 print lmmoptions.get()
-
-def check_results(ps,ts):
-    print np.array(ps)
-    print len(ps),sum(ps)
-    p1 = round(ps[0],4)
-    p2 = round(ps[-1],4)
-    if options.geno == 'data/small.geno':
-        info("Validating results for "+options.geno)
-        assert p1==0.7387, "p1=%f" % p1
-        assert p2==0.7387, "p2=%f" % p2
-    if options.geno == 'data/small_na.geno':
-        info("Validating results for "+options.geno)
-        assert p1==0.062, "p1=%f" % p1
-        assert p2==0.062, "p2=%f" % p2
-    if options.geno == 'data/test8000.geno':
-        info("Validating results for "+options.geno)
-        assert round(sum(ps)) == 4070, round(sum(ps))
-        assert len(ps) == 8000
-    info("Run completed")
 
 if y is not None:
     n = y.shape[0]
